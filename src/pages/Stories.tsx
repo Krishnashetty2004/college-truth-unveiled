@@ -110,31 +110,10 @@ function StoryCard({
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.03 }}
-      className="group flex gap-3 rounded-xl border border-border bg-card p-4 transition-all hover:shadow-elevated"
+      className="group rounded-xl border border-border bg-card p-4 transition-all hover:shadow-elevated"
     >
-      {/* Vote column */}
-      <div className="flex flex-col items-center gap-0.5 pt-1">
-        <button
-          onClick={() => onVote(story.id)}
-          disabled={isVoting}
-          className={`rounded p-0.5 transition-colors ${
-            hasVoted
-              ? "text-primary"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <ArrowBigUp className={`h-5 w-5 ${hasVoted ? "fill-primary" : ""}`} />
-        </button>
-        <span className={`text-xs font-bold ${hasVoted ? "text-primary" : ""}`}>
-          {story.upvote_count}
-        </span>
-        <button className="rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground">
-          <ArrowBigDown className="h-5 w-5" />
-        </button>
-      </div>
-
       {/* Content */}
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           <Badge variant="outline" className="text-[10px] px-1.5 py-0">
             {catInfo.emoji} {catInfo.label}
@@ -161,7 +140,25 @@ function StoryCard({
           {story.content}
         </p>
 
+        {/* Bottom action bar: votes + comments inline */}
         <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => onVote(story.id)}
+              disabled={isVoting}
+              className={`rounded p-0.5 transition-colors ${
+                hasVoted ? "text-primary" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <ArrowBigUp className={`h-4 w-4 ${hasVoted ? "fill-primary" : ""}`} />
+            </button>
+            <span className={`font-bold ${hasVoted ? "text-primary" : ""}`}>
+              {story.upvote_count}
+            </span>
+            <button className="rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground">
+              <ArrowBigDown className="h-4 w-4" />
+            </button>
+          </div>
           <Link to={`/stories/${story.id}`} className="flex items-center gap-1 transition-colors hover:text-foreground">
             <MessageCircle className="h-3.5 w-3.5" />
             {story.comment_count} comments
