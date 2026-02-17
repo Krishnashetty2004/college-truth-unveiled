@@ -1,13 +1,27 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { lovable } from "@/integrations/lovable/index";
+import { supabase } from "@/integrations/supabase/client";
 import logoImg from "@/assets/logo.jpeg";
 
 const Auth = () => {
+  const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+
   const handleGoogleSignIn = async () => {
-    await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
+    if (isLocalhost) {
+      // Use Supabase Auth directly for local development
+      await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+    } else {
+      // Use Lovable Cloud Auth for production
+      await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+    }
   };
 
   return (
