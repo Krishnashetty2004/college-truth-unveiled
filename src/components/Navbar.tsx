@@ -1,60 +1,47 @@
-import { Star } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { NavLink } from "@/components/NavLink";
+import { Star, GraduationCap, BarChart3, GitCompare, BookOpen, LogIn } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
+
+const navItems = [
+  { to: "/", icon: Star, label: "Home" },
+  { to: "/colleges", icon: GraduationCap, label: "Colleges" },
+  { to: "/rankings", icon: BarChart3, label: "Rankings" },
+  { to: "/compare", icon: GitCompare, label: "Compare" },
+  { to: "/stories", icon: BookOpen, label: "Stories" },
+  { to: "/auth", icon: LogIn, label: "Sign In" },
+];
 
 const Navbar = () => {
+  const location = useLocation();
+
   return (
-    <nav className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-primary">
-            <Star className="h-5 w-5 text-white" />
-          </div>
-          <span className="font-display text-xl font-bold">RateMyCollege</span>
-        </Link>
-        <div className="hidden items-center gap-6 md:flex">
-          <NavLink
-            to="/colleges"
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            activeClassName="text-foreground"
+    <motion.nav
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.5, delay: 0.3 }}
+      className="fixed left-0 top-0 z-50 flex h-screen w-14 flex-col items-center justify-center gap-3 py-8"
+    >
+      {navItems.map((item) => {
+        const isActive = location.pathname === item.to;
+        return (
+          <Link
+            key={item.to}
+            to={item.to}
+            title={item.label}
+            className={`group relative flex h-10 w-10 items-center justify-center rounded-lg transition-all duration-200 ${
+              isActive
+                ? "bg-foreground/10 text-foreground"
+                : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
+            }`}
           >
-            Colleges
-          </NavLink>
-          <NavLink
-            to="/rankings"
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            activeClassName="text-foreground"
-          >
-            Rankings
-          </NavLink>
-          <NavLink
-            to="/compare"
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            activeClassName="text-foreground"
-          >
-            Compare
-          </NavLink>
-          <NavLink
-            to="/stories"
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            activeClassName="text-foreground"
-          >
-            Stories
-          </NavLink>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link to="/auth">
-            <Button variant="outline" size="sm">Sign In</Button>
+            <item.icon className="h-[18px] w-[18px]" strokeWidth={1.5} />
+            <span className="pointer-events-none absolute left-12 whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-xs text-background opacity-0 transition-opacity group-hover:opacity-100">
+              {item.label}
+            </span>
           </Link>
-          <Link to="/colleges">
-            <Button size="sm" className="bg-gradient-primary hover:opacity-90">
-              Browse Colleges
-            </Button>
-          </Link>
-        </div>
-      </div>
-    </nav>
+        );
+      })}
+    </motion.nav>
   );
 };
 
