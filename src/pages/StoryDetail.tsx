@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowBigUp, ArrowBigDown, MessageCircle, ArrowLeft, Send, Reply, Loader2 } from "lucide-react";
+import { ArrowBigUp, ArrowBigDown, MessageCircle, ArrowLeft, Send, Reply, Loader2, ImageIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -38,8 +38,11 @@ type CommentWithAlias = Tables<"story_comments"> & {
 };
 
 function timeAgo(dateStr: string) {
-  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-  if (seconds < 60) return "just now";
+  // Parse as UTC and compare to now (UTC)
+  const date = new Date(dateStr.endsWith("Z") ? dateStr : dateStr + "Z");
+  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (seconds < 5) return "just now";
+  if (seconds < 60) return `${seconds}s ago`;
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
   if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
   if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
@@ -146,6 +149,7 @@ const StoryDetail = () => {
   const [commentText, setCommentText] = useState("");
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState("");
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
@@ -169,44 +173,23 @@ const StoryDetail = () => {
     enabled: !!id,
   });
 
-  const { data: comments, isLoading: commentsLoading } = useQuery({
-    queryKey: ["story-comments", id],
+  // Fetch story images from storage
+  const { data: storyImages } = useQuery({
+    queryKey: ["story-images", id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("story_comments")
-        .select("*")
-        .eq("story_id", id!)
-        .order("created_at", { ascending: true });
-      if (error) throw error;
-
-      // Fetch anonymous aliases for all unique user_ids
-      const userIds = [...new Set((data || []).map((c) => c.user_id))];
-      const aliasMap: Record<string, string> = {};
-      for (const uid of userIds) {
-        const { data: alias } = await supabase.rpc("get_anonymous_alias", { _user_id: uid });
-        if (alias) aliasMap[uid] = alias;
-      }
-
-      const enriched: CommentWithAlias[] = (data || []).map((c) => ({
-        ...c,
-        anonymous_alias: aliasMap[c.user_id] || "Anonymous",
-      }));
-
-      // Build tree
-      const map = new Map<string, CommentWithAlias>();
-      const roots: CommentWithAlias[] = [];
-      enriched.forEach((c) => {
-        c.replies = [];
-        map.set(c.id, c);
+      if (!id) return [];
+      // List files under story-images/<any-user-id>/<storyId>/
+      // We search by listing and filtering — storage doesn't support cross-folder listing easily
+      // so we store path as userId/storyId/filename and list from storage
+      const { data } = await supabase.storage.from("story-images").list("", {
+        search: id,
       });
-      enriched.forEach((c) => {
-        if (c.parent_comment_id && map.has(c.parent_comment_id)) {
-          map.get(c.parent_comment_id)!.replies!.push(c);
-        } else {
-          roots.push(c);
-        }
+      if (!data) return [];
+      // Build public URLs for matched files
+      return data.map((f) => {
+        const { data: urlData } = supabase.storage.from("story-images").getPublicUrl(f.name);
+        return urlData.publicUrl;
       });
-      return roots;
     },
     enabled: !!id,
   });
@@ -223,6 +206,43 @@ const StoryDetail = () => {
       return !!data;
     },
     enabled: !!user && !!id,
+  });
+
+  const { data: comments, isLoading: commentsLoading } = useQuery({
+    queryKey: ["story-comments", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("story_comments")
+        .select("*")
+        .eq("story_id", id!)
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+
+      const userIds = [...new Set((data || []).map((c) => c.user_id))];
+      const aliasMap: Record<string, string> = {};
+      for (const uid of userIds) {
+        const { data: alias } = await supabase.rpc("get_anonymous_alias", { _user_id: uid });
+        if (alias) aliasMap[uid] = alias;
+      }
+
+      const enriched: CommentWithAlias[] = (data || []).map((c) => ({
+        ...c,
+        anonymous_alias: aliasMap[c.user_id] || "Anonymous",
+      }));
+
+      const map = new Map<string, CommentWithAlias>();
+      const roots: CommentWithAlias[] = [];
+      enriched.forEach((c) => { c.replies = []; map.set(c.id, c); });
+      enriched.forEach((c) => {
+        if (c.parent_comment_id && map.has(c.parent_comment_id)) {
+          map.get(c.parent_comment_id)!.replies!.push(c);
+        } else {
+          roots.push(c);
+        }
+      });
+      return roots;
+    },
+    enabled: !!id,
   });
 
   const voteMutation = useMutation({
@@ -262,6 +282,12 @@ const StoryDetail = () => {
   const handleVote = () => {
     if (!user) { navigate("/auth"); return; }
     voteMutation.mutate();
+  };
+
+  // Downvote = remove upvote if voted, otherwise no-op (no negative votes in system)
+  const handleDownvote = () => {
+    if (!user) { navigate("/auth"); return; }
+    if (hasVoted) voteMutation.mutate(); // toggle off
   };
 
   const handleComment = () => {
@@ -309,8 +335,22 @@ const StoryDetail = () => {
     <div className="min-h-screen bg-background pl-14">
       <Navbar />
 
+      {/* Lightbox */}
+      {lightboxSrc && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+          onClick={() => setLightboxSrc(null)}
+        >
+          <img
+            src={lightboxSrc}
+            alt=""
+            className="max-h-[90vh] max-w-[90vw] rounded-xl object-contain shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
+
       <main className="mx-auto max-w-3xl px-4 py-8">
-        {/* Back link */}
         <Link to="/stories" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors mb-6">
           <ArrowLeft className="h-3 w-3" /> Back to Stories
         </Link>
@@ -320,11 +360,23 @@ const StoryDetail = () => {
           <div className="flex gap-4">
             {/* Vote column */}
             <div className="flex flex-col items-center gap-0.5 pt-1">
-              <button onClick={handleVote} disabled={voteMutation.isPending} className={`rounded p-1 transition-colors ${hasVoted ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}>
+              <button
+                onClick={handleVote}
+                disabled={voteMutation.isPending}
+                className={`rounded p-1 transition-colors ${hasVoted ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}
+                title="Upvote"
+              >
                 <ArrowBigUp className={`h-6 w-6 ${hasVoted ? "fill-primary" : ""}`} />
               </button>
-              <span className={`text-sm font-bold ${hasVoted ? "text-primary" : ""}`}>{story.upvote_count}</span>
-              <button className="rounded p-1 text-muted-foreground transition-colors hover:text-foreground">
+              <span className={`text-sm font-bold tabular-nums ${hasVoted ? "text-primary" : ""}`}>
+                {story.upvote_count}
+              </span>
+              <button
+                onClick={handleDownvote}
+                disabled={voteMutation.isPending}
+                className={`rounded p-1 transition-colors ${hasVoted ? "text-muted-foreground hover:text-destructive" : "text-muted-foreground/30 cursor-default"}`}
+                title={hasVoted ? "Remove upvote" : "Downvote not available"}
+              >
                 <ArrowBigDown className="h-6 w-6" />
               </button>
             </div>
@@ -348,6 +400,24 @@ const StoryDetail = () => {
 
               <h1 className="mt-3 font-display text-xl font-semibold leading-tight">{story.title}</h1>
               <div className="mt-4 text-sm leading-relaxed whitespace-pre-wrap">{story.content}</div>
+
+              {/* Story images */}
+              {storyImages && storyImages.length > 0 && (
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {storyImages.map((url, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setLightboxSrc(url)}
+                      className="relative h-28 w-36 overflow-hidden rounded-lg border border-border hover:opacity-90 transition-opacity"
+                    >
+                      <img src={url} alt={`Story image ${i + 1}`} className="h-full w-full object-cover" />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/10 transition-colors">
+                        <ImageIcon className="h-4 w-4 text-white opacity-0 group-hover:opacity-100" />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
 
               <div className="mt-6 flex items-center gap-4 text-xs text-muted-foreground border-t border-border pt-4">
                 <span className="flex items-center gap-1">

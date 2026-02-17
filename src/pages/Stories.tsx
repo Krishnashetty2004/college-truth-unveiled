@@ -83,8 +83,11 @@ function useUserVotes(user: User | null, storyIds: string[]) {
 }
 
 function timeAgo(dateStr: string) {
-  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-  if (seconds < 60) return "just now";
+  // Ensure UTC parsing: Supabase returns ISO strings, add Z if missing
+  const date = new Date(dateStr.endsWith("Z") ? dateStr : dateStr + "Z");
+  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (seconds < 5) return "just now";
+  if (seconds < 60) return `${seconds}s ago`;
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
   if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
   if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
