@@ -151,19 +151,21 @@ function StoryCard({
           <span>{timeAgo(story.created_at)}</span>
         </div>
 
-        <h3 className="mt-1.5 font-display text-sm font-medium leading-snug line-clamp-2">
-          {story.title}
-        </h3>
+        <Link to={`/stories/${story.id}`} className="block">
+          <h3 className="mt-1.5 font-display text-sm font-medium leading-snug line-clamp-2 hover:text-primary transition-colors">
+            {story.title}
+          </h3>
+        </Link>
 
         <p className="mt-1 text-xs text-muted-foreground line-clamp-3 leading-relaxed">
           {story.content}
         </p>
 
         <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
-          <button className="flex items-center gap-1 transition-colors hover:text-foreground">
+          <Link to={`/stories/${story.id}`} className="flex items-center gap-1 transition-colors hover:text-foreground">
             <MessageCircle className="h-3.5 w-3.5" />
             {story.comment_count} comments
-          </button>
+          </Link>
         </div>
       </div>
     </motion.div>

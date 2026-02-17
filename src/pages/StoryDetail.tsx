@@ -1,0 +1,427 @@
+import { useState, useEffect } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { ArrowBigUp, ArrowBigDown, MessageCircle, ArrowLeft, Send, Reply, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import Navbar from "@/components/Navbar";
+import { motion } from "framer-motion";
+import type { Tables } from "@/integrations/supabase/types";
+import type { User } from "@supabase/supabase-js";
+
+const categoryLabels: Record<string, { label: string; emoji: string }> = {
+  campus_life: { label: "Campus Life", emoji: "🏫" },
+  placement_experience: { label: "Placement Horror", emoji: "💼" },
+  hostel_life: { label: "Hostel Life", emoji: "🏠" },
+  ragging: { label: "Ragging Truth", emoji: "⚠️" },
+  fest_culture: { label: "Fest Culture", emoji: "🎪" },
+  faculty_stories: { label: "Professor Tea", emoji: "☕" },
+  admission_journey: { label: "Admission Journey", emoji: "🎯" },
+  funny: { label: "Funny AF", emoji: "😂" },
+  horror: { label: "Horror Stories", emoji: "😱" },
+  inspirational: { label: "Inspirational", emoji: "✨" },
+  confession: { label: "Confessions", emoji: "🔥" },
+  other: { label: "Other", emoji: "💬" },
+};
+
+type StoryWithCollege = Tables<"college_stories"> & {
+  colleges: { id: string; name: string; short_name: string | null } | null;
+};
+
+type CommentWithAlias = Tables<"story_comments"> & {
+  anonymous_alias?: string;
+  replies?: CommentWithAlias[];
+};
+
+function timeAgo(dateStr: string) {
+  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+  if (seconds < 60) return "just now";
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+  return `${Math.floor(seconds / 604800)}w ago`;
+}
+
+function CommentItem({
+  comment,
+  depth,
+  user,
+  onReply,
+  replyingTo,
+  replyContent,
+  setReplyContent,
+  onSubmitReply,
+  isSubmitting,
+}: {
+  comment: CommentWithAlias;
+  depth: number;
+  user: User | null;
+  onReply: (id: string | null) => void;
+  replyingTo: string | null;
+  replyContent: string;
+  setReplyContent: (v: string) => void;
+  onSubmitReply: () => void;
+  isSubmitting: boolean;
+}) {
+  const aliasInitial = (comment.anonymous_alias || "A")[0].toUpperCase();
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={`${depth > 0 ? "ml-6 border-l-2 border-border pl-4" : ""}`}
+    >
+      <div className="py-3">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Avatar className="h-5 w-5">
+            <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
+              {aliasInitial}
+            </AvatarFallback>
+          </Avatar>
+          <span className="font-medium text-foreground">{comment.anonymous_alias || "Anonymous"}</span>
+          <span>·</span>
+          <span>{timeAgo(comment.created_at)}</span>
+        </div>
+        <p className="mt-1.5 text-sm leading-relaxed">{comment.content}</p>
+        <div className="mt-2 flex items-center gap-3">
+          {user && depth < 3 && (
+            <button
+              onClick={() => onReply(replyingTo === comment.id ? null : comment.id)}
+              className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <Reply className="h-3 w-3" />
+              Reply
+            </button>
+          )}
+        </div>
+
+        {replyingTo === comment.id && (
+          <div className="mt-3 flex gap-2">
+            <Textarea
+              value={replyContent}
+              onChange={(e) => setReplyContent(e.target.value)}
+              placeholder="Write a reply..."
+              className="min-h-[60px] text-sm"
+              rows={2}
+            />
+            <Button
+              size="sm"
+              onClick={onSubmitReply}
+              disabled={!replyContent.trim() || isSubmitting}
+              className="self-end"
+            >
+              {isSubmitting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {comment.replies?.map((reply) => (
+        <CommentItem
+          key={reply.id}
+          comment={reply}
+          depth={depth + 1}
+          user={user}
+          onReply={onReply}
+          replyingTo={replyingTo}
+          replyContent={replyContent}
+          setReplyContent={setReplyContent}
+          onSubmitReply={onSubmitReply}
+          isSubmitting={isSubmitting}
+        />
+      ))}
+    </motion.div>
+  );
+}
+
+const StoryDetail = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [user, setUser] = useState<User | null>(null);
+  const [commentText, setCommentText] = useState("");
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyContent, setReplyContent] = useState("");
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      setUser(session?.user ?? null);
+    });
+    supabase.auth.getSession().then(({ data: { session } }) => setUser(session?.user ?? null));
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const { data: story, isLoading: storyLoading } = useQuery({
+    queryKey: ["story", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("college_stories")
+        .select("*, colleges(id, name, short_name)")
+        .eq("id", id!)
+        .single();
+      if (error) throw error;
+      return data as StoryWithCollege;
+    },
+    enabled: !!id,
+  });
+
+  const { data: comments, isLoading: commentsLoading } = useQuery({
+    queryKey: ["story-comments", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("story_comments")
+        .select("*")
+        .eq("story_id", id!)
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+
+      // Fetch anonymous aliases for all unique user_ids
+      const userIds = [...new Set((data || []).map((c) => c.user_id))];
+      const aliasMap: Record<string, string> = {};
+      for (const uid of userIds) {
+        const { data: alias } = await supabase.rpc("get_anonymous_alias", { _user_id: uid });
+        if (alias) aliasMap[uid] = alias;
+      }
+
+      const enriched: CommentWithAlias[] = (data || []).map((c) => ({
+        ...c,
+        anonymous_alias: aliasMap[c.user_id] || "Anonymous",
+      }));
+
+      // Build tree
+      const map = new Map<string, CommentWithAlias>();
+      const roots: CommentWithAlias[] = [];
+      enriched.forEach((c) => {
+        c.replies = [];
+        map.set(c.id, c);
+      });
+      enriched.forEach((c) => {
+        if (c.parent_comment_id && map.has(c.parent_comment_id)) {
+          map.get(c.parent_comment_id)!.replies!.push(c);
+        } else {
+          roots.push(c);
+        }
+      });
+      return roots;
+    },
+    enabled: !!id,
+  });
+
+  const { data: hasVoted } = useQuery({
+    queryKey: ["user-vote", user?.id, id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("helpful_votes")
+        .select("id")
+        .eq("user_id", user!.id)
+        .eq("story_id", id!)
+        .maybeSingle();
+      return !!data;
+    },
+    enabled: !!user && !!id,
+  });
+
+  const voteMutation = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.rpc("toggle_story_vote", {
+        p_story_id: id!,
+        p_user_id: user!.id,
+      });
+      if (error) throw error;
+      return data as { voted: boolean; count: number };
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["story", id] });
+      queryClient.invalidateQueries({ queryKey: ["user-vote"] });
+    },
+  });
+
+  const commentMutation = useMutation({
+    mutationFn: async ({ content, parentId }: { content: string; parentId?: string }) => {
+      const { error } = await supabase.from("story_comments").insert({
+        story_id: id!,
+        user_id: user!.id,
+        content,
+        parent_comment_id: parentId || null,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setCommentText("");
+      setReplyContent("");
+      setReplyingTo(null);
+      queryClient.invalidateQueries({ queryKey: ["story-comments", id] });
+      queryClient.invalidateQueries({ queryKey: ["story", id] });
+    },
+  });
+
+  const handleVote = () => {
+    if (!user) { navigate("/auth"); return; }
+    voteMutation.mutate();
+  };
+
+  const handleComment = () => {
+    if (!user) { navigate("/auth"); return; }
+    if (!commentText.trim()) return;
+    commentMutation.mutate({ content: commentText.trim() });
+  };
+
+  const handleReply = () => {
+    if (!replyContent.trim() || !replyingTo) return;
+    commentMutation.mutate({ content: replyContent.trim(), parentId: replyingTo });
+  };
+
+  const catInfo = story ? (categoryLabels[story.category] || categoryLabels.other) : null;
+
+  if (storyLoading) {
+    return (
+      <div className="min-h-screen bg-background pl-14">
+        <Navbar />
+        <div className="mx-auto max-w-3xl px-4 py-10 space-y-4">
+          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-8 w-3/4" />
+          <Skeleton className="h-4 w-1/3" />
+          <Skeleton className="h-40 w-full" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!story) {
+    return (
+      <div className="min-h-screen bg-background pl-14">
+        <Navbar />
+        <div className="mx-auto max-w-3xl px-4 py-20 text-center">
+          <p className="font-display text-xl">Story not found</p>
+          <Button variant="outline" className="mt-4" asChild>
+            <Link to="/stories">← Back to Stories</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background pl-14">
+      <Navbar />
+
+      <main className="mx-auto max-w-3xl px-4 py-8">
+        {/* Back link */}
+        <Link to="/stories" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors mb-6">
+          <ArrowLeft className="h-3 w-3" /> Back to Stories
+        </Link>
+
+        {/* Story */}
+        <article className="rounded-xl border border-border bg-card p-6">
+          <div className="flex gap-4">
+            {/* Vote column */}
+            <div className="flex flex-col items-center gap-0.5 pt-1">
+              <button onClick={handleVote} disabled={voteMutation.isPending} className={`rounded p-1 transition-colors ${hasVoted ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}>
+                <ArrowBigUp className={`h-6 w-6 ${hasVoted ? "fill-primary" : ""}`} />
+              </button>
+              <span className={`text-sm font-bold ${hasVoted ? "text-primary" : ""}`}>{story.upvote_count}</span>
+              <button className="rounded p-1 text-muted-foreground transition-colors hover:text-foreground">
+                <ArrowBigDown className="h-6 w-6" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                {catInfo && (
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                    {catInfo.emoji} {catInfo.label}
+                  </Badge>
+                )}
+                {story.colleges && (
+                  <Link to={`/colleges/${story.colleges.id}`} className="font-medium text-primary hover:underline">
+                    {story.colleges.short_name || story.colleges.name}
+                  </Link>
+                )}
+                <span>·</span>
+                <span>{timeAgo(story.created_at)}</span>
+              </div>
+
+              <h1 className="mt-3 font-display text-xl font-semibold leading-tight">{story.title}</h1>
+              <div className="mt-4 text-sm leading-relaxed whitespace-pre-wrap">{story.content}</div>
+
+              <div className="mt-6 flex items-center gap-4 text-xs text-muted-foreground border-t border-border pt-4">
+                <span className="flex items-center gap-1">
+                  <MessageCircle className="h-3.5 w-3.5" />
+                  {story.comment_count} comments
+                </span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        {/* Comment box */}
+        <div className="mt-6 rounded-xl border border-border bg-card p-4">
+          <h2 className="font-display text-sm font-medium mb-3">
+            {user ? "Drop a comment" : "Sign in to comment"}
+          </h2>
+          {user ? (
+            <div className="flex gap-2">
+              <Textarea
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                placeholder="What's on your mind?"
+                className="min-h-[70px] text-sm"
+                rows={3}
+              />
+              <Button
+                onClick={handleComment}
+                disabled={!commentText.trim() || commentMutation.isPending}
+                className="self-end"
+              >
+                {commentMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              </Button>
+            </div>
+          ) : (
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/auth">Sign in</Link>
+            </Button>
+          )}
+        </div>
+
+        {/* Comments list */}
+        <div className="mt-6 space-y-1">
+          <h2 className="font-display text-sm font-medium mb-4">
+            Comments {story.comment_count > 0 && `(${story.comment_count})`}
+          </h2>
+          {commentsLoading ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="py-3 space-y-2">
+                <Skeleton className="h-3 w-1/4" />
+                <Skeleton className="h-4 w-3/4" />
+              </div>
+            ))
+          ) : comments && comments.length > 0 ? (
+            comments.map((c) => (
+              <CommentItem
+                key={c.id}
+                comment={c}
+                depth={0}
+                user={user}
+                onReply={setReplyingTo}
+                replyingTo={replyingTo}
+                replyContent={replyContent}
+                setReplyContent={setReplyContent}
+                onSubmitReply={handleReply}
+                isSubmitting={commentMutation.isPending}
+              />
+            ))
+          ) : (
+            <p className="py-8 text-center text-sm text-muted-foreground">No comments yet. Be the first!</p>
+          )}
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default StoryDetail;

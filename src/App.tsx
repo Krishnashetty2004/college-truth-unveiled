@@ -9,6 +9,7 @@ import CollegeDetail from "./pages/CollegeDetail";
 import Rankings from "./pages/Rankings";
 import Compare from "./pages/Compare";
 import Stories from "./pages/Stories";
+import StoryDetail from "./pages/StoryDetail";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/rankings" element={<Rankings />} />
           <Route path="/compare" element={<Compare />} />
           <Route path="/stories" element={<Stories />} />
+          <Route path="/stories/:id" element={<StoryDetail />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
