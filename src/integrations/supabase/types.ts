@@ -756,6 +756,7 @@ export type Database = {
         | "pharmacy"
         | "architecture"
         | "other"
+        | "design"
       content_status: "published" | "held" | "rejected"
       image_type:
         | "hostel"
@@ -946,6 +947,7 @@ export const Constants = {
         "pharmacy",
         "architecture",
         "other",
+        "design",
       ],
       content_status: ["published", "held", "rejected"],
       image_type: [
