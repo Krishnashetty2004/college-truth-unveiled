@@ -12,10 +12,12 @@ import { Separator } from "@/components/ui/separator";
 import {
   MapPin, Calendar, Users, Globe, ArrowLeft, Star,
   GraduationCap, MessageSquare, TrendingUp, AlertCircle,
+  BookOpen, ArrowBigUp, ChevronRight,
 } from "lucide-react";
 
 type College = Tables<"colleges">;
 type Review = Tables<"reviews">;
+type Story = Tables<"college_stories">;
 
 const RATING_CATEGORIES = [
   { key: "avg_placement", label: "Placements" },
@@ -141,6 +143,22 @@ const CollegeDetail = () => {
         .limit(20);
       if (error) throw error;
       return data as Review[];
+    },
+    enabled: !!id,
+  });
+
+  const { data: collegeStories } = useQuery({
+    queryKey: ["college-stories", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("college_stories")
+        .select("*")
+        .eq("college_id", id!)
+        .eq("status", "published")
+        .order("upvote_count", { ascending: false })
+        .limit(5);
+      if (error) throw error;
+      return data as Story[];
     },
     enabled: !!id,
   });
@@ -341,6 +359,63 @@ const CollegeDetail = () => {
                     <Link to="/auth">
                       <Button size="sm" variant="outline">Write a Review</Button>
                     </Link>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+
+            {/* College Stories */}
+            <div>
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="font-display text-lg font-semibold flex items-center gap-2">
+                  <BookOpen className="h-5 w-5 text-primary" />
+                  Stories from {college.short_name || college.name}
+                </h2>
+                <Link to={`/stories`}>
+                  <Button size="sm" variant="ghost" className="text-xs gap-1">
+                    View all <ChevronRight className="h-3 w-3" />
+                  </Button>
+                </Link>
+              </div>
+
+              {collegeStories && collegeStories.length > 0 ? (
+                <div className="space-y-3">
+                  {collegeStories.map((story) => {
+                    const catInfo: Record<string, string> = {
+                      campus_life: "🏫", placement_experience: "💼", hostel_life: "🏠",
+                      ragging: "⚠️", fest_culture: "🎪", faculty_stories: "☕",
+                      admission_journey: "🎯", funny: "😂", horror: "😱",
+                      inspirational: "✨", confession: "🔥", other: "💬",
+                    };
+                    return (
+                      <Card key={story.id} className="transition-all hover:shadow-sm">
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-3">
+                            <div className="flex flex-col items-center gap-0.5 pt-0.5">
+                              <ArrowBigUp className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-xs font-bold">{story.upvote_count}</span>
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <span>{catInfo[story.category] || "💬"} {story.category.replace("_", " ")}</span>
+                              </div>
+                              <h4 className="mt-1 font-display text-sm font-medium line-clamp-1">{story.title}</h4>
+                              <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{story.content}</p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              ) : (
+                <Card>
+                  <CardContent className="flex flex-col items-center gap-2 py-8 text-center">
+                    <BookOpen className="h-8 w-8 text-muted-foreground" />
+                    <p className="text-sm font-medium">No stories yet</p>
+                    <p className="text-xs text-muted-foreground">
+                      Got a wild story from {college.short_name || college.name}? Share it anonymously!
+                    </p>
                   </CardContent>
                 </Card>
               )}

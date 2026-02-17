@@ -723,6 +723,10 @@ export type Database = {
         Returns: boolean
       }
       is_admin_or_moderator: { Args: { _user_id: string }; Returns: boolean }
+      toggle_story_vote: {
+        Args: { p_story_id: string; p_user_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

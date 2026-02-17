@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Flame, Clock, TrendingUp, MessageCircle, ArrowBigUp, ArrowBigDown, ChevronRight, AlertCircle } from "lucide-react";
+import { Flame, Clock, TrendingUp, MessageCircle, ArrowBigUp, ArrowBigDown, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -9,6 +10,7 @@ import Navbar from "@/components/Navbar";
 import { Constants } from "@/integrations/supabase/types";
 import { motion } from "framer-motion";
 import type { Tables } from "@/integrations/supabase/types";
+import type { User } from "@supabase/supabase-js";
 
 type SortMode = "hot" | "new" | "top";
 
@@ -30,7 +32,7 @@ const categoryLabels: Record<string, { label: string; emoji: string }> = {
 };
 
 type StoryWithCollege = Tables<"college_stories"> & {
-  colleges: { name: string; short_name: string | null } | null;
+  colleges: { id: string; name: string; short_name: string | null } | null;
 };
 
 function useStories(sort: SortMode, category?: string) {
@@ -39,7 +41,7 @@ function useStories(sort: SortMode, category?: string) {
     queryFn: async () => {
       let query = supabase
         .from("college_stories")
-        .select("*, colleges(name, short_name)")
+        .select("*, colleges(id, name, short_name)")
         .eq("status", "published");
 
       if (category) {
@@ -51,7 +53,6 @@ function useStories(sort: SortMode, category?: string) {
       } else if (sort === "top") {
         query = query.order("upvote_count", { ascending: false });
       } else {
-        // "hot" — recent + upvotes
         query = query.order("upvote_count", { ascending: false }).order("created_at", { ascending: false });
       }
 
@@ -64,6 +65,22 @@ function useStories(sort: SortMode, category?: string) {
   });
 }
 
+function useUserVotes(user: User | null, storyIds: string[]) {
+  return useQuery({
+    queryKey: ["user-votes", user?.id, storyIds],
+    queryFn: async () => {
+      if (!user || storyIds.length === 0) return new Set<string>();
+      const { data } = await supabase
+        .from("helpful_votes")
+        .select("story_id")
+        .eq("user_id", user.id)
+        .in("story_id", storyIds);
+      return new Set((data || []).map((v) => v.story_id).filter(Boolean) as string[]);
+    },
+    enabled: !!user && storyIds.length > 0,
+  });
+}
+
 function timeAgo(dateStr: string) {
   const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
   if (seconds < 60) return "just now";
@@ -73,7 +90,19 @@ function timeAgo(dateStr: string) {
   return `${Math.floor(seconds / 604800)}w ago`;
 }
 
-function StoryCard({ story, index }: { story: StoryWithCollege; index: number }) {
+function StoryCard({
+  story,
+  index,
+  hasVoted,
+  onVote,
+  isVoting,
+}: {
+  story: StoryWithCollege;
+  index: number;
+  hasVoted: boolean;
+  onVote: (storyId: string) => void;
+  isVoting: boolean;
+}) {
   const catInfo = categoryLabels[story.category] || categoryLabels.other;
 
   return (
@@ -85,10 +114,20 @@ function StoryCard({ story, index }: { story: StoryWithCollege; index: number })
     >
       {/* Vote column */}
       <div className="flex flex-col items-center gap-0.5 pt-1">
-        <button className="rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground">
-          <ArrowBigUp className="h-5 w-5" />
+        <button
+          onClick={() => onVote(story.id)}
+          disabled={isVoting}
+          className={`rounded p-0.5 transition-colors ${
+            hasVoted
+              ? "text-primary"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <ArrowBigUp className={`h-5 w-5 ${hasVoted ? "fill-primary" : ""}`} />
         </button>
-        <span className="text-xs font-bold">{story.upvote_count}</span>
+        <span className={`text-xs font-bold ${hasVoted ? "text-primary" : ""}`}>
+          {story.upvote_count}
+        </span>
         <button className="rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground">
           <ArrowBigDown className="h-5 w-5" />
         </button>
@@ -101,7 +140,12 @@ function StoryCard({ story, index }: { story: StoryWithCollege; index: number })
             {catInfo.emoji} {catInfo.label}
           </Badge>
           {story.colleges && (
-            <span>{story.colleges.short_name || story.colleges.name}</span>
+            <Link
+              to={`/colleges/${story.colleges.id}`}
+              className="font-medium text-primary hover:underline"
+            >
+              {story.colleges.short_name || story.colleges.name}
+            </Link>
           )}
           <span>·</span>
           <span>{timeAgo(story.created_at)}</span>
@@ -129,8 +173,68 @@ function StoryCard({ story, index }: { story: StoryWithCollege; index: number })
 const Stories = () => {
   const [sort, setSort] = useState<SortMode>("hot");
   const [activeCategory, setActiveCategory] = useState<string>();
+  const [user, setUser] = useState<User | null>(null);
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   const { data: stories, isLoading, isError } = useStories(sort, activeCategory);
+  const storyIds = (stories || []).map((s) => s.id);
+  const { data: votedSet } = useUserVotes(user, storyIds);
+
+  const voteMutation = useMutation({
+    mutationFn: async (storyId: string) => {
+      const { data, error } = await supabase.rpc("toggle_story_vote", {
+        p_story_id: storyId,
+        p_user_id: user!.id,
+      });
+      if (error) throw error;
+      return data as { voted: boolean; count: number };
+    },
+    onMutate: async (storyId) => {
+      // Optimistic update
+      await queryClient.cancelQueries({ queryKey: ["stories"] });
+      const prev = queryClient.getQueryData<StoryWithCollege[]>(["stories", sort, activeCategory]);
+      if (prev) {
+        const wasVoted = votedSet?.has(storyId);
+        queryClient.setQueryData(
+          ["stories", sort, activeCategory],
+          prev.map((s) =>
+            s.id === storyId
+              ? { ...s, upvote_count: s.upvote_count + (wasVoted ? -1 : 1) }
+              : s
+          )
+        );
+      }
+      return { prev };
+    },
+    onError: (_err, _storyId, context) => {
+      if (context?.prev) {
+        queryClient.setQueryData(["stories", sort, activeCategory], context.prev);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["stories"] });
+      queryClient.invalidateQueries({ queryKey: ["user-votes"] });
+    },
+  });
+
+  const handleVote = (storyId: string) => {
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+    voteMutation.mutate(storyId);
+  };
 
   const sortOptions: { key: SortMode; label: string; icon: typeof Flame }[] = [
     { key: "hot", label: "Hot", icon: Flame },
@@ -225,7 +329,14 @@ const Stories = () => {
             </div>
           ) : stories && stories.length > 0 ? (
             stories.map((story, i) => (
-              <StoryCard key={story.id} story={story} index={i} />
+              <StoryCard
+                key={story.id}
+                story={story}
+                index={i}
+                hasVoted={votedSet?.has(story.id) ?? false}
+                onVote={handleVote}
+                isVoting={voteMutation.isPending}
+              />
             ))
           ) : (
             <div className="py-16 text-center">
@@ -234,7 +345,7 @@ const Stories = () => {
                 Be the first to drop a story. It's completely anonymous — go wild.
               </p>
               <Button variant="outline" className="mt-4" asChild>
-                <a href="/auth">Sign in to post</a>
+                <Link to="/auth">Sign in to post</Link>
               </Button>
             </div>
           )}
