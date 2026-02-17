@@ -14,6 +14,10 @@ import WriteReview from "./pages/WriteReview";
 import WriteProfReview from "./pages/WriteProfReview";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import ProfessorDetail from "./pages/ProfessorDetail";
+import Profile from "./pages/Profile";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
 
 const queryClient = new QueryClient();
 
@@ -29,11 +33,15 @@ const App = () => (
           <Route path="/colleges/:id" element={<CollegeDetail />} />
           <Route path="/colleges/:collegeId/review" element={<WriteReview />} />
           <Route path="/professors/:professorId/review" element={<WriteProfReview />} />
+          <Route path="/professors/:id" element={<ProfessorDetail />} />
           <Route path="/rankings" element={<Rankings />} />
           <Route path="/compare" element={<Compare />} />
           <Route path="/stories" element={<Stories />} />
           <Route path="/stories/:id" element={<StoryDetail />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

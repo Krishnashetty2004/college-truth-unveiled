@@ -12,12 +12,14 @@ import { Separator } from "@/components/ui/separator";
 import {
   MapPin, Calendar, Users, Globe, ArrowLeft, Star,
   GraduationCap, MessageSquare, TrendingUp, AlertCircle,
-  BookOpen, ArrowBigUp, ChevronRight,
+  BookOpen, ArrowBigUp, ChevronRight, UserCheck,
 } from "lucide-react";
 
 type College = Tables<"colleges">;
 type Review = Tables<"reviews">;
 type Story = Tables<"college_stories">;
+type Professor = Tables<"professors">;
+
 
 const RATING_CATEGORIES = [
   { key: "avg_placement", label: "Placements" },
@@ -162,6 +164,22 @@ const CollegeDetail = () => {
     },
     enabled: !!id,
   });
+
+  const { data: professors } = useQuery({
+    queryKey: ["college-professors", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("professors")
+        .select("*")
+        .eq("college_id", id!)
+        .order("total_reviews", { ascending: false })
+        .limit(10);
+      if (error) throw error;
+      return data as Professor[];
+    },
+    enabled: !!id,
+  });
+
 
   if (isLoading) {
     return (
@@ -364,6 +382,56 @@ const CollegeDetail = () => {
               )}
             </div>
 
+              {/* Faculty */}
+            <div>
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="font-display text-lg font-semibold flex items-center gap-2">
+                  <UserCheck className="h-5 w-5 text-primary" />
+                  Faculty
+                </h2>
+              </div>
+              {professors && professors.length > 0 ? (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {professors.map((prof) => (
+                    <Link key={prof.id} to={`/professors/${prof.id}`}>
+                      <Card className="transition-all hover:shadow-md cursor-pointer">
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <p className="font-medium text-sm truncate">{prof.name}</p>
+                              {prof.designation && (
+                                <p className="text-xs text-muted-foreground truncate">{prof.designation}</p>
+                              )}
+                              {prof.department && (
+                                <Badge variant="secondary" className="mt-1 text-xs">{prof.department}</Badge>
+                              )}
+                            </div>
+                            {prof.ai_overall_score && Number(prof.ai_overall_score) > 0 && (
+                              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-primary/30 bg-primary/5">
+                                <span className="text-xs font-bold text-primary">
+                                  {Number(prof.ai_overall_score).toFixed(1)}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          {prof.total_reviews > 0 && (
+                            <p className="mt-2 text-xs text-muted-foreground">{prof.total_reviews} review{prof.total_reviews !== 1 ? "s" : ""}</p>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <Card>
+                  <CardContent className="flex flex-col items-center gap-2 py-8 text-center">
+                    <UserCheck className="h-8 w-8 text-muted-foreground" />
+                    <p className="text-sm font-medium">No faculty listed yet</p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+
             {/* College Stories */}
             <div>
               <div className="mb-4 flex items-center justify-between">
@@ -371,7 +439,7 @@ const CollegeDetail = () => {
                   <BookOpen className="h-5 w-5 text-primary" />
                   Stories from {college.short_name || college.name}
                 </h2>
-                <Link to={`/stories`}>
+                <Link to={`/stories?college=${id}`}>
                   <Button size="sm" variant="ghost" className="text-xs gap-1">
                     View all <ChevronRight className="h-3 w-3" />
                   </Button>
@@ -388,23 +456,25 @@ const CollegeDetail = () => {
                       inspirational: "✨", confession: "🔥", other: "💬",
                     };
                     return (
-                      <Card key={story.id} className="transition-all hover:shadow-sm">
-                        <CardContent className="p-4">
-                          <div className="flex items-start gap-3">
-                            <div className="flex flex-col items-center gap-0.5 pt-0.5">
-                              <ArrowBigUp className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-xs font-bold">{story.upvote_count}</span>
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                <span>{catInfo[story.category] || "💬"} {story.category.replace("_", " ")}</span>
+                      <Link key={story.id} to={`/stories/${story.id}`}>
+                        <Card className="transition-all hover:shadow-sm cursor-pointer">
+                          <CardContent className="p-4">
+                            <div className="flex items-start gap-3">
+                              <div className="flex flex-col items-center gap-0.5 pt-0.5">
+                                <ArrowBigUp className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-xs font-bold">{story.upvote_count}</span>
                               </div>
-                              <h4 className="mt-1 font-display text-sm font-medium line-clamp-1">{story.title}</h4>
-                              <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{story.content}</p>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                  <span>{catInfo[story.category] || "💬"} {story.category.replace("_", " ")}</span>
+                                </div>
+                                <h4 className="mt-1 font-display text-sm font-medium line-clamp-1">{story.title}</h4>
+                                <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{story.content}</p>
+                              </div>
                             </div>
-                          </div>
-                        </CardContent>
-                      </Card>
+                          </CardContent>
+                        </Card>
+                      </Link>
                     );
                   })}
                 </div>

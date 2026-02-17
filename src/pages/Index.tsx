@@ -196,7 +196,7 @@ const Index = () => {
             Every honest review helps the next batch of students make better choices.
           </p>
           <div className="mt-8">
-            <Link to="/auth">
+            <Link to="/colleges">
               <Button
                 variant="outline"
                 className="group gap-3 rounded-lg border-border bg-card px-6 py-3 text-sm font-medium shadow-card transition-all hover:shadow-elevated"
@@ -231,7 +231,8 @@ const Index = () => {
             <div>
               <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Community</h4>
               <ul className="mt-3 space-y-2 text-sm">
-                <li><Link to="/auth" className="text-foreground/70 hover:text-foreground transition-colors">Write a Review</Link></li>
+                <li><Link to="/colleges" className="text-foreground/70 hover:text-foreground transition-colors">Write a Review</Link></li>
+                <li><Link to="/stories" className="text-foreground/70 hover:text-foreground transition-colors">Campus Stories</Link></li>
               </ul>
             </div>
             <div>

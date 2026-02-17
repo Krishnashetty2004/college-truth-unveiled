@@ -1,19 +1,38 @@
-import { Star, GraduationCap, BarChart3, GitCompare, BookOpen, LogIn } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Star, GraduationCap, BarChart3, GitCompare, BookOpen, LogIn, User } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import SearchDialog from "@/components/SearchDialog";
+import { supabase } from "@/integrations/supabase/client";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
-const navItems = [
+const baseNavItems = [
   { to: "/", icon: Star, label: "Home" },
   { to: "/colleges", icon: GraduationCap, label: "Colleges" },
   { to: "/rankings", icon: BarChart3, label: "Rankings" },
   { to: "/compare", icon: GitCompare, label: "Compare" },
   { to: "/stories", icon: BookOpen, label: "Stories" },
-  { to: "/auth", icon: LogIn, label: "Sign In" },
 ];
 
 const Navbar = () => {
   const location = useLocation();
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const authItem = user
+    ? { to: "/profile", icon: User, label: "Profile" }
+    : { to: "/auth", icon: LogIn, label: "Sign In" };
+
+  const navItems = [...baseNavItems, authItem];
 
   return (
     <motion.nav
@@ -24,7 +43,8 @@ const Navbar = () => {
     >
       <SearchDialog />
       {navItems.map((item) => {
-        const isActive = location.pathname === item.to;
+        const isActive = location.pathname === item.to ||
+          (item.to === "/profile" && location.pathname === "/profile");
         return (
           <Link
             key={item.to}
