@@ -1,118 +1,111 @@
 
 
-# College Directory Page + 200 College Seed Data
+# Wild Stories, Functional Voting, and College Connections
 
 ## What We're Building
 
-Two things in one step:
-1. **Seed the database** with 200 real Indian colleges across 10 cities
-2. **Build a full College Directory page** with search, filters, and college cards
+Three major pieces to make Stories come alive:
 
 ---
 
-## Step 1: Seed 200 Colleges
+## 1. Seed 20+ Wild Sample Stories
 
-Insert ~200 colleges into the `colleges` table using SQL INSERT statements via the data insertion tool. Each college includes:
-- Name, short name, city, state
-- Type (engineering, medical, management, etc.)
-- Ownership (government, private, deemed, autonomous)
-- Tier (tier_1, tier_2, tier_3)
-- Established year, estimated student population
+Insert sample stories directly into the database using an edge function (since RLS requires `user_id = auth.uid()` for inserts, we'll use the service role key in an edge function to bypass RLS for seeding).
 
-### City Distribution (~20 per city)
-- **Hyderabad** (~25): IIIT-H, BITS Pilani Hyd, JNTU, Osmania, CBIT, VNR VJIET, Malla Reddy colleges, Mahindra University, ISB, NALSAR, etc.
-- **Bangalore** (~25): IISc, IIM-B, RVCE, BMS, PES, Christ, Jain, MSRIT, DSCE, CMR, REVA, etc.
-- **Delhi-NCR** (~25): IIT Delhi, JNU, DU colleges, DTU, NSUT, Amity, SRM AP, Galgotias, Bennett, Sharda, etc.
-- **Chennai** (~20): IIT Madras, Anna University, SRM, VIT Chennai, Loyola, MCC, Sathyabama, Jeppiaar, etc.
-- **Mumbai** (~20): IIT Bombay, VJTI, SPIT, DJ Sanghvi, Thadomal, NMIMS, KC College, Xavier's, etc.
-- **Pune** (~20): COEP, VIT Pune, Symbiosis, MIT Pune, PICT, Sinhgad colleges, Fergusson, etc.
-- **Kolkata** (~15): IIT Kharagpur area, Jadavpur, Presidency, IIEST, Heritage, Techno India, etc.
-- **Vizag/AP** (~15): AU, GITAM, Centurion, Raghu, ANITS, MVGR, etc.
-- **Ahmedabad** (~15): IIM-A, DAIICT, Nirma, LD Engineering, CEPT, Gujarat University, etc.
-- **Jaipur** (~15): MNIT, IIS University, Manipal Jaipur, JECRC, Poornima, Amity Jaipur, etc.
+Stories will be spread across colleges (IIIT-H, BITS Hyd, JNTUH, OU, CBIT, VNR VJIET, VCE, etc.) and categories. Examples:
 
-This will be done via multiple SQL INSERT calls (batched to stay within limits).
+- **Confession**: "My professor caught me and my ex making out in the server room at IIIT-H. He just said 'at least close the door' and walked away."
+- **Faculty Stories**: "Our JNTUH prof literally copies from YouTube tutorials during class. One time his WiFi died mid-lecture and he just... left."
+- **Placement Horror**: "Company came to BITS Hyd, asked us to build a full-stack app in 2 hours. HR was on Tinder the whole time."
+- **Hostel Life**: "My roommate at OU brought his girlfriend to our hostel. She stayed for 3 weeks. The warden thought she was a new student."
+- **Funny**: "Someone released a chicken in the CBIT exam hall. The invigilator chased it for 20 minutes. We all passed that exam."
+- **Campus Life**: "The VNR fest was so bad, the chief guest left mid-speech. The DJ played the same 3 songs on loop."
+- **Ragging**: "Seniors at MRCET made freshers propose to a statue. Campus guard recorded it and posted on YouTube."
+- **Horror**: "The old hostel block at CVR is genuinely haunted. Three people saw the same woman in white. I'm not even joking."
+
+...and 12+ more across all categories, with varied upvote counts (0-200+) to make sorting work.
 
 ---
 
-## Step 2: College Directory Page
+## 2. Functional Upvote/Downvote System
 
-### New Files
-- **`src/pages/Colleges.tsx`** — Full rewrite of the placeholder page
-- **`src/hooks/useColleges.ts`** — React Query hook for fetching/filtering colleges from the database
+Currently the vote buttons are decorative. We'll make them real:
 
-### Page Features
+- **How it works**: Use the existing `helpful_votes` table (has `story_id` column) to track votes
+- **Upvote**: Insert a row into `helpful_votes` with `story_id` set. Increment `upvote_count` on the story
+- **Downvote**: Remove the vote (or don't upvote). We'll keep it simple -- upvote toggle (tap to upvote, tap again to remove)
+- **Auth check**: If user isn't logged in, clicking vote redirects to `/auth`
+- **Visual feedback**: Upvote arrow turns filled/colored when user has voted
+- **Optimistic updates**: Vote count updates instantly, rolls back on error
 
-**Header Section**
-- Page title "College Directory" with subtitle
-- Total college count badge
-- Reuses the nav from Index.tsx pattern (will extract a shared Navbar component)
+### Database changes needed:
+- Create a database function `toggle_story_vote` that atomically inserts/deletes the vote AND updates `upvote_count` on the story (to avoid race conditions)
+- Add a unique constraint on `helpful_votes(user_id, story_id)` to prevent double voting
 
-**Search Bar**
-- Full-width search input with search icon
-- Debounced text search (searches college name and short_name using Supabase `ilike`)
-- URL query param support (e.g., `/colleges?city=Hyderabad` from homepage links)
+---
 
-**Filter Bar (horizontal, responsive)**
-- **City filter** — Select dropdown with all 10 cities + "All Cities"
-- **Type filter** — Select dropdown: Engineering, Medical, Management, Law, etc.
-- **Ownership filter** — Select dropdown: Government, Private, Deemed, Autonomous
-- **Tier filter** — Select dropdown: Tier 1, Tier 2, Tier 3
-- Active filter count badge
-- "Clear All" button when filters are active
+## 3. College-Story Connection in UI
 
-**College Cards Grid**
-- Responsive grid: 1 column mobile, 2 tablet, 3 desktop
-- Each card shows:
-  - College name + short name
-  - City, State badges
-  - Type + Ownership + Tier badges (color-coded: green=Tier 1, blue=Tier 2, orange=Tier 3)
-  - AI Overall Score (circular progress or score display) — will show "No reviews yet" initially
-  - Total reviews count
-  - Established year
-  - Student population (if available)
-  - "View Details" link (routes to `/colleges/:id` — page built later)
+Stories already have `college_id` linking to `colleges` table (foreign key exists). We'll enhance the connection:
 
-**Empty & Loading States**
-- Skeleton loading cards while fetching
-- Empty state with illustration when no colleges match filters
-- Error state with retry button
+- **On Stories page**: College name shown as a clickable link to `/colleges/:id`
+- **On College Detail page**: Add a "Stories" tab/section showing stories from that college
+- **Story cards**: Show college badge that links to the college page
 
-**Pagination**
-- Show 20 colleges per page
-- Previous/Next buttons with page indicator
-- Uses Supabase `.range()` for server-side pagination
+---
 
-### Technical Details
+## Technical Details
 
-**`src/hooks/useColleges.ts`**
-```typescript
-// Uses @tanstack/react-query with queryKey including all filter params
-// Fetches from supabase.from('colleges').select('*')
-// Applies .ilike('name', '%search%') for search
-// Applies .eq('city', city) etc. for filters
-// Applies .range(from, to) for pagination
-// Applies .order('name', { ascending: true })
+### Step 1: Database Migration
+```sql
+-- Unique constraint to prevent double voting
+ALTER TABLE helpful_votes 
+ADD CONSTRAINT helpful_votes_user_story_unique 
+UNIQUE (user_id, story_id);
+
+-- Atomic vote toggle function
+CREATE OR REPLACE FUNCTION toggle_story_vote(p_story_id uuid, p_user_id uuid)
+RETURNS json AS $$
+DECLARE
+  existing_vote_id uuid;
+  new_count integer;
+BEGIN
+  SELECT id INTO existing_vote_id 
+  FROM helpful_votes 
+  WHERE story_id = p_story_id AND user_id = p_user_id;
+  
+  IF existing_vote_id IS NOT NULL THEN
+    DELETE FROM helpful_votes WHERE id = existing_vote_id;
+    UPDATE college_stories SET upvote_count = GREATEST(upvote_count - 1, 0) 
+    WHERE id = p_story_id RETURNING upvote_count INTO new_count;
+    RETURN json_build_object('voted', false, 'count', new_count);
+  ELSE
+    INSERT INTO helpful_votes (user_id, story_id) VALUES (p_user_id, p_story_id);
+    UPDATE college_stories SET upvote_count = upvote_count + 1 
+    WHERE id = p_story_id RETURNING upvote_count INTO new_count;
+    RETURN json_build_object('voted', true, 'count', new_count);
+  END IF;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 ```
 
-**URL State Sync**
-- Filters sync to URL search params using `useSearchParams`
-- Allows direct linking like `/colleges?city=Hyderabad&type=engineering`
-- City links from homepage will pre-filter automatically
+### Step 2: Seed Edge Function
+Create `supabase/functions/seed-stories/index.ts` that inserts 20+ wild stories using the service role key. One-time use, call it once to populate.
 
-### Shared Navbar Component
-- Extract the nav from `Index.tsx` into `src/components/Navbar.tsx`
-- Reuse across Colleges page (and all future pages)
+### Step 3: Update Stories.tsx
+- Add auth state tracking (`supabase.auth.getUser()`)
+- Fetch user's existing votes on visible stories
+- Wire up vote button to call `toggle_story_vote` RPC
+- Make college name a `<Link>` to `/colleges/:id`
+- Add optimistic UI updates with react-query mutation
 
----
+### Step 4: Update CollegeDetail.tsx
+- Add a "Stories" section at the bottom
+- Query `college_stories` filtered by `college_id`
+- Show latest 5 stories with "View all" link to Stories page filtered by college
 
-## Summary of Files Changed/Created
-
-| File | Action |
-|------|--------|
-| Database (colleges table) | INSERT ~200 colleges via data tool |
-| `src/components/Navbar.tsx` | NEW — shared navigation component |
-| `src/hooks/useColleges.ts` | NEW — React Query hook for college data |
-| `src/pages/Colleges.tsx` | REWRITE — full directory page |
-| `src/pages/Index.tsx` | EDIT — use shared Navbar |
-
+### Files to Create/Modify
+- **Create**: `supabase/functions/seed-stories/index.ts` (seed data)
+- **Modify**: `src/pages/Stories.tsx` (voting, auth, college links)
+- **Modify**: `src/pages/CollegeDetail.tsx` (add stories section)
+- **Migration**: Add unique constraint + vote toggle function
