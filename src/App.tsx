@@ -10,6 +10,8 @@ import Rankings from "./pages/Rankings";
 import Compare from "./pages/Compare";
 import Stories from "./pages/Stories";
 import StoryDetail from "./pages/StoryDetail";
+import WriteReview from "./pages/WriteReview";
+import WriteProfReview from "./pages/WriteProfReview";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -25,6 +27,8 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/colleges" element={<Colleges />} />
           <Route path="/colleges/:id" element={<CollegeDetail />} />
+          <Route path="/colleges/:collegeId/review" element={<WriteReview />} />
+          <Route path="/professors/:professorId/review" element={<WriteProfReview />} />
           <Route path="/rankings" element={<Rankings />} />
           <Route path="/compare" element={<Compare />} />
           <Route path="/stories" element={<Stories />} />

@@ -21,6 +21,7 @@ export type Database = {
           comment_count: number
           content: string
           created_at: string
+          fts: unknown
           id: string
           report_count: number
           status: Database["public"]["Enums"]["content_status"]
@@ -35,6 +36,7 @@ export type Database = {
           comment_count?: number
           content: string
           created_at?: string
+          fts?: unknown
           id?: string
           report_count?: number
           status?: Database["public"]["Enums"]["content_status"]
@@ -49,6 +51,7 @@ export type Database = {
           comment_count?: number
           content?: string
           created_at?: string
+          fts?: unknown
           id?: string
           report_count?: number
           status?: Database["public"]["Enums"]["content_status"]
@@ -91,6 +94,7 @@ export type Database = {
           city: string
           created_at: string
           established_year: number | null
+          fts: unknown
           id: string
           is_active: boolean
           name: string
@@ -128,6 +132,7 @@ export type Database = {
           city: string
           created_at?: string
           established_year?: number | null
+          fts?: unknown
           id?: string
           is_active?: boolean
           name: string
@@ -165,6 +170,7 @@ export type Database = {
           city?: string
           created_at?: string
           established_year?: number | null
+          fts?: unknown
           id?: string
           is_active?: boolean
           name?: string
@@ -326,6 +332,7 @@ export type Database = {
           created_at: string
           department: string | null
           designation: string | null
+          fts: unknown
           id: string
           name: string
           total_reviews: number
@@ -340,6 +347,7 @@ export type Database = {
           created_at?: string
           department?: string | null
           designation?: string | null
+          fts?: unknown
           id?: string
           name: string
           total_reviews?: number
@@ -354,6 +362,7 @@ export type Database = {
           created_at?: string
           department?: string | null
           designation?: string | null
+          fts?: unknown
           id?: string
           name?: string
           total_reviews?: number
@@ -723,6 +732,10 @@ export type Database = {
         Returns: boolean
       }
       is_admin_or_moderator: { Args: { _user_id: string }; Returns: boolean }
+      search_all: {
+        Args: { result_limit?: number; search_query: string }
+        Returns: Json
+      }
       toggle_story_vote: {
         Args: { p_story_id: string; p_user_id: string }
         Returns: Json
