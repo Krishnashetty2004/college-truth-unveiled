@@ -147,7 +147,7 @@ const CollegeDetail = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background pl-14">
         <Navbar />
         <div className="container mx-auto max-w-5xl px-4 py-8 space-y-6">
           <Skeleton className="h-8 w-64" />
@@ -163,7 +163,7 @@ const CollegeDetail = () => {
 
   if (isError || !college) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background pl-14">
         <Navbar />
         <div className="container mx-auto flex max-w-5xl flex-col items-center gap-4 px-4 py-20 text-center">
           <AlertCircle className="h-12 w-12 text-destructive" />
@@ -179,7 +179,7 @@ const CollegeDetail = () => {
   const score = college.ai_overall_score ? Number(college.ai_overall_score) : null;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pl-14">
       <Navbar />
 
       {/* Back link + header */}
