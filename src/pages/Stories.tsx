@@ -41,13 +41,13 @@ function useStories(sort: SortMode, category?: string) {
   return useQuery({
     queryKey: ["stories", sort, category],
     queryFn: async () => {
-      let query = supabase
+      let query = (supabase as any)
         .from("college_stories")
         .select("*, thumbnail_url, colleges(id, name, short_name)")
         .eq("status", "published");
 
       if (category) {
-        query = query.eq("category", category as any);
+        query = query.eq("category", category);
       }
 
       if (sort === "new") {
@@ -62,7 +62,7 @@ function useStories(sort: SortMode, category?: string) {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as StoryWithCollege[];
+      return (data ?? []) as StoryWithCollege[];
     },
   });
 }
