@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import Navbar from "@/components/Navbar";
+import CreateStoryDialog from "@/components/CreateStoryDialog";
 import { Constants } from "@/integrations/supabase/types";
 import { motion } from "framer-motion";
 import type { Tables } from "@/integrations/supabase/types";
@@ -246,11 +247,14 @@ const Stories = () => {
       <Navbar />
 
       <header className="border-b border-border px-4 py-10">
-        <div className="mx-auto max-w-3xl">
-          <h1 className="font-display text-3xl">Stories</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Raw, unfiltered, anonymous. Professor tea, campus confessions, placement horror, and everything in between.
-          </p>
+        <div className="mx-auto max-w-3xl flex items-start justify-between">
+          <div>
+            <h1 className="font-display text-3xl">Stories</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Raw, unfiltered, anonymous. Professor tea, campus confessions, placement horror, and everything in between.
+            </p>
+          </div>
+          <CreateStoryDialog />
         </div>
       </header>
 

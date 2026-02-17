@@ -1,6 +1,7 @@
 import { Star, GraduationCap, BarChart3, GitCompare, BookOpen, LogIn } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
+import SearchDialog from "@/components/SearchDialog";
 
 const navItems = [
   { to: "/", icon: Star, label: "Home" },
@@ -21,6 +22,7 @@ const Navbar = () => {
       transition={{ duration: 0.5, delay: 0.3 }}
       className="fixed left-0 top-0 z-50 flex h-screen w-14 flex-col items-center justify-center gap-3 py-8"
     >
+      <SearchDialog />
       {navItems.map((item) => {
         const isActive = location.pathname === item.to;
         return (
