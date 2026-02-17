@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
-import { Star, GraduationCap, BarChart3, GitCompare, BookOpen, LogIn, User } from "lucide-react";
+import { GraduationCap, BarChart3, GitCompare, BookOpen, LogIn, User } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import SearchDialog from "@/components/SearchDialog";
 import { supabase } from "@/integrations/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
+import logoImg from "@/assets/logo.jpeg";
 
 const baseNavItems = [
-  { to: "/", icon: Star, label: "Home" },
   { to: "/colleges", icon: GraduationCap, label: "Colleges" },
   { to: "/rankings", icon: BarChart3, label: "Rankings" },
   { to: "/compare", icon: GitCompare, label: "Compare" },
@@ -41,6 +41,12 @@ const Navbar = () => {
       transition={{ duration: 0.5, delay: 0.3 }}
       className="fixed left-0 top-0 z-50 flex h-screen w-14 flex-col items-center justify-center gap-3 py-8"
     >
+      <Link to="/" title="Home" className="group relative mb-1 flex h-10 w-10 items-center justify-center">
+        <img src={logoImg} alt="RateMyCollege" className="h-9 w-9 rounded-lg object-cover" />
+        <span className="pointer-events-none absolute left-12 whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-xs text-background opacity-0 transition-opacity group-hover:opacity-100">
+          Home
+        </span>
+      </Link>
       <SearchDialog />
       {navItems.map((item) => {
         const isActive = location.pathname === item.to ||
