@@ -1,23 +1,23 @@
-import { Star, Shield, Eye, TrendingUp, Users, Search, ChevronRight, GraduationCap, MessageSquare, BarChart3 } from "lucide-react";
+import { ChevronRight, Shield, Eye, TrendingUp, Users, Search, GraduationCap, MessageSquare, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 30 },
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.1, duration: 0.5, ease: "easeOut" as const },
+    transition: { delay: 0.4 + i * 0.15, duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] as const },
   }),
 };
 
 const stats = [
-  { label: "Colleges Ranked", value: "200+", icon: GraduationCap },
-  { label: "Cities Covered", value: "10", icon: TrendingUp },
-  { label: "Rating Categories", value: "12", icon: BarChart3 },
-  { label: "100% Anonymous", value: "Always", icon: Shield },
+  { label: "Colleges Ranked", value: "200+" },
+  { label: "Cities Covered", value: "10" },
+  { label: "Rating Categories", value: "12" },
+  { label: "100% Anonymous", value: "Always" },
 ];
 
 const categories = [
@@ -29,22 +29,22 @@ const features = [
   {
     icon: Shield,
     title: "Anonymous & Safe",
-    desc: "Google sign-in, anonymous alias. Your identity is never exposed. Rate freely without fear.",
+    desc: "Google sign-in, anonymous alias. Your identity is never exposed.",
   },
   {
     icon: Eye,
     title: "Proof-Based Reviews",
-    desc: "Attach photos of hostels, food, classrooms. Real proof, not empty promises.",
+    desc: "Attach photos of hostels, food, classrooms. Real proof, not promises.",
   },
   {
     icon: TrendingUp,
     title: "AI-Powered Rankings",
-    desc: "OpenAI detects fake reviews, generates trust-weighted scores. No college can game the system.",
+    desc: "AI detects fake reviews, generates trust-weighted scores.",
   },
   {
     icon: Users,
     title: "Student-First. Always.",
-    desc: "We never take money from colleges. Ever. Our only loyalty is to students seeking the truth.",
+    desc: "We never take money from colleges. Our loyalty is to students.",
   },
 ];
 
@@ -58,104 +58,75 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-hero px-4 py-24 text-white md:py-32">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_hsl(245,58%,51%,0.3),_transparent_50%)]" />
-        <div className="container relative mx-auto max-w-5xl text-center">
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={fadeUp}
-            custom={0}
-            className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm backdrop-blur-sm"
-          >
-            <Shield className="h-4 w-4" />
-            India's First Anonymous College Review Platform
-          </motion.div>
-
+      {/* Hero — Terrain-inspired centered minimal */}
+      <section className="flex min-h-screen flex-col items-center justify-center px-4">
+        <div className="max-w-[600px] text-center">
           <motion.h1
             initial="hidden"
             animate="visible"
             variants={fadeUp}
-            custom={1}
-            className="font-display text-4xl font-bold leading-tight md:text-6xl lg:text-7xl"
+            custom={0}
+            className="font-display text-3xl leading-snug tracking-tight md:text-4xl lg:text-[2.75rem]"
           >
-            The Truth About
-            <br />
-            <span className="text-secondary">
-              Your College
-            </span>
+            RateMyCollege is India's first anonymous, proof-based college review platform.
           </motion.h1>
 
-          <motion.p
-            initial="hidden"
-            animate="visible"
-            variants={fadeUp}
-            custom={2}
-            className="mx-auto mt-6 max-w-2xl text-lg text-white/70 md:text-xl"
-          >
-            Anonymous, proof-based, AI-verified reviews across 12 categories.
-            No college can pay to hide the truth here.
-          </motion.p>
-
           <motion.div
             initial="hidden"
             animate="visible"
             variants={fadeUp}
-            custom={3}
-            className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
+            custom={1}
+            className="mt-10"
           >
             <Link to="/colleges">
-              <Button size="lg" className="bg-secondary text-secondary-foreground hover:bg-secondary/90 gap-2 text-base font-semibold px-8">
-                <Search className="h-5 w-5" />
-                Find Your College
+              <Button
+                variant="outline"
+                className="group gap-3 rounded-lg border-border bg-card px-6 py-3 text-sm font-medium shadow-card transition-all hover:shadow-elevated"
+              >
+                Explore Colleges
+                <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Button>
             </Link>
-            <Link to="/auth">
-              <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 gap-2 text-base">
-                <MessageSquare className="h-5 w-5" />
-                Write a Review
-              </Button>
-            </Link>
-          </motion.div>
-
-          {/* Stats */}
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={fadeUp}
-            custom={4}
-            className="mt-16 grid grid-cols-2 gap-4 md:grid-cols-4"
-          >
-            {stats.map((stat) => (
-              <div key={stat.label} className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
-                <stat.icon className="mx-auto mb-2 h-6 w-6 text-secondary" />
-                <p className="font-display text-2xl font-bold">{stat.value}</p>
-                <p className="text-sm text-white/60">{stat.label}</p>
-              </div>
-            ))}
           </motion.div>
         </div>
       </section>
 
+      {/* Stats — minimal row */}
+      <section className="border-t border-border px-4 py-20">
+        <div className="mx-auto grid max-w-3xl grid-cols-2 gap-8 text-center md:grid-cols-4">
+          {stats.map((stat, i) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+              viewport={{ once: true }}
+            >
+              <p className="font-display text-3xl">{stat.value}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{stat.label}</p>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
       {/* 12 Categories */}
-      <section className="border-b border-border px-4 py-20">
-        <div className="container mx-auto max-w-5xl">
-          <h2 className="font-display text-center text-3xl font-bold md:text-4xl">
-            Rate Across <span className="text-gradient-primary">12 Categories</span>
+      <section className="border-t border-border px-4 py-20">
+        <div className="mx-auto max-w-3xl">
+          <h2 className="font-display text-center text-2xl md:text-3xl">
+            Rate Across 12 Categories
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-center text-muted-foreground">
+          <p className="mx-auto mt-3 max-w-lg text-center text-sm text-muted-foreground">
             From placements to WiFi speed, hostel quality to canteen food — every detail matters.
           </p>
-          <div className="mt-10 flex flex-wrap justify-center gap-3">
+          <div className="mt-10 flex flex-wrap justify-center gap-2">
             {categories.map((cat, i) => (
               <motion.span
                 key={cat}
-                initial={{ opacity: 0, scale: 0.8 }}
+                initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ delay: i * 0.05 }}
+                transition={{ delay: i * 0.04 }}
                 viewport={{ once: true }}
-                className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium shadow-card transition-colors hover:border-primary hover:bg-accent"
+                className="rounded-full border border-border bg-card px-4 py-2 text-xs font-medium transition-colors hover:bg-accent"
               >
                 {cat}
               </motion.span>
@@ -165,12 +136,12 @@ const Index = () => {
       </section>
 
       {/* Features */}
-      <section className="px-4 py-20">
-        <div className="container mx-auto max-w-5xl">
-          <h2 className="font-display text-center text-3xl font-bold md:text-4xl">
-            Why Students <span className="text-gradient-primary">Trust Us</span>
+      <section className="border-t border-border px-4 py-20">
+        <div className="mx-auto max-w-3xl">
+          <h2 className="font-display text-center text-2xl md:text-3xl">
+            Why Students Trust Us
           </h2>
-          <div className="mt-12 grid gap-6 md:grid-cols-2">
+          <div className="mt-12 grid gap-8 md:grid-cols-2">
             {features.map((f, i) => (
               <motion.div
                 key={f.title}
@@ -178,13 +149,13 @@ const Index = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
                 viewport={{ once: true }}
-                className="group rounded-2xl border border-border bg-card p-6 shadow-card transition-all hover:shadow-elevated hover:border-primary/30"
+                className="group"
               >
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-accent">
-                  <f.icon className="h-6 w-6 text-primary" />
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card">
+                  <f.icon className="h-4 w-4 text-foreground" strokeWidth={1.5} />
                 </div>
-                <h3 className="font-display text-lg font-semibold">{f.title}</h3>
-                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
+                <h3 className="font-display text-lg">{f.title}</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{f.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -192,23 +163,23 @@ const Index = () => {
       </section>
 
       {/* Cities */}
-      <section className="border-t border-border bg-muted/50 px-4 py-20">
-        <div className="container mx-auto max-w-5xl text-center">
-          <h2 className="font-display text-3xl font-bold md:text-4xl">
-            Covering <span className="text-gradient-primary">10 Major Cities</span>
+      <section className="border-t border-border px-4 py-20">
+        <div className="mx-auto max-w-3xl text-center">
+          <h2 className="font-display text-2xl md:text-3xl">
+            10 Major Cities
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
+          <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">
             200+ colleges across India's biggest education hubs.
           </p>
-          <div className="mt-10 flex flex-wrap justify-center gap-3">
+          <div className="mt-10 flex flex-wrap justify-center gap-2">
             {cities.map((city) => (
               <Link
                 key={city}
                 to={`/colleges?city=${encodeURIComponent(city)}`}
-                className="group flex items-center gap-1 rounded-lg border border-border bg-card px-5 py-3 font-medium shadow-card transition-all hover:border-primary hover:shadow-elevated"
+                className="group flex items-center gap-1 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-medium transition-all hover:shadow-elevated"
               >
                 {city}
-                <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
+                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
               </Link>
             ))}
           </div>
@@ -216,21 +187,22 @@ const Index = () => {
       </section>
 
       {/* CTA */}
-      <section className="bg-gradient-hero px-4 py-20 text-white">
-        <div className="container mx-auto max-w-3xl text-center">
-          <h2 className="font-display text-3xl font-bold md:text-4xl">
-            Your Review Could Save Someone
-            <br />
-            <span className="text-secondary">From a Wrong Decision</span>
+      <section className="border-t border-border px-4 py-24">
+        <div className="mx-auto max-w-lg text-center">
+          <h2 className="font-display text-2xl md:text-3xl">
+            Your review could save someone from a wrong decision.
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-white/70">
-            Every honest review helps the next batch of students make better choices. 
-            Share your experience anonymously.
+          <p className="mx-auto mt-4 max-w-sm text-sm text-muted-foreground">
+            Every honest review helps the next batch of students make better choices.
           </p>
-          <div className="mt-8 flex justify-center gap-4">
+          <div className="mt-8">
             <Link to="/auth">
-              <Button size="lg" className="bg-secondary text-secondary-foreground hover:bg-secondary/90 font-semibold px-8">
+              <Button
+                variant="outline"
+                className="group gap-3 rounded-lg border-border bg-card px-6 py-3 text-sm font-medium shadow-card transition-all hover:shadow-elevated"
+              >
                 Write a Review — It's Anonymous
+                <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Button>
             </Link>
           </div>
@@ -239,45 +211,38 @@ const Index = () => {
 
       {/* Footer */}
       <footer className="border-t border-border px-4 py-12">
-        <div className="container mx-auto max-w-5xl">
+        <div className="mx-auto max-w-3xl">
           <div className="grid gap-8 md:grid-cols-4">
             <div>
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary">
-                  <Star className="h-4 w-4 text-white" />
-                </div>
-                <span className="font-display text-lg font-bold">RateMyCollege</span>
-              </div>
-              <p className="mt-3 text-sm text-muted-foreground">
+              <span className="font-display text-lg">RateMyCollege</span>
+              <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
                 India's first anonymous, AI-verified college review platform.
               </p>
             </div>
             <div>
-              <h4 className="font-display font-semibold">Explore</h4>
-              <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-                <li><Link to="/colleges" className="hover:text-foreground">Colleges</Link></li>
-                <li><Link to="/rankings" className="hover:text-foreground">Rankings</Link></li>
-                <li><Link to="/compare" className="hover:text-foreground">Compare</Link></li>
-                <li><Link to="/stories" className="hover:text-foreground">Stories</Link></li>
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Explore</h4>
+              <ul className="mt-3 space-y-2 text-sm">
+                <li><Link to="/colleges" className="text-foreground/70 hover:text-foreground transition-colors">Colleges</Link></li>
+                <li><Link to="/rankings" className="text-foreground/70 hover:text-foreground transition-colors">Rankings</Link></li>
+                <li><Link to="/compare" className="text-foreground/70 hover:text-foreground transition-colors">Compare</Link></li>
+                <li><Link to="/stories" className="text-foreground/70 hover:text-foreground transition-colors">Stories</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-display font-semibold">Community</h4>
-              <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-                <li><Link to="/auth" className="hover:text-foreground">Write a Review</Link></li>
-                <li><Link to="/professors" className="hover:text-foreground">Professor Reviews</Link></li>
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Community</h4>
+              <ul className="mt-3 space-y-2 text-sm">
+                <li><Link to="/auth" className="text-foreground/70 hover:text-foreground transition-colors">Write a Review</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-display font-semibold">Legal</h4>
-              <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-                <li><Link to="/terms" className="hover:text-foreground">Terms of Service</Link></li>
-                <li><Link to="/privacy" className="hover:text-foreground">Privacy Policy</Link></li>
-                <li><Link to="/content-policy" className="hover:text-foreground">Content Policy</Link></li>
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Legal</h4>
+              <ul className="mt-3 space-y-2 text-sm">
+                <li><Link to="/terms" className="text-foreground/70 hover:text-foreground transition-colors">Terms</Link></li>
+                <li><Link to="/privacy" className="text-foreground/70 hover:text-foreground transition-colors">Privacy</Link></li>
               </ul>
             </div>
           </div>
-          <div className="mt-10 border-t border-border pt-6 text-center text-sm text-muted-foreground">
+          <div className="mt-10 border-t border-border pt-6 text-center text-xs text-muted-foreground">
             © {new Date().getFullYear()} RateMyCollege. We never take money from colleges.
           </div>
         </div>
