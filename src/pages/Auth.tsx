@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import { lovable } from "@/integrations/lovable/index";
+import logoImg from "@/assets/logo.jpeg";
 
 const Auth = () => {
   const handleGoogleSignIn = async () => {
@@ -15,9 +15,7 @@ const Auth = () => {
       <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-elevated">
         <div className="mb-8 text-center">
           <Link to="/" className="inline-flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-primary">
-              <Star className="h-5 w-5 text-white" />
-            </div>
+            <img src={logoImg} alt="RateMyCollege logo" className="h-10 w-10 rounded-lg object-cover" />
             <span className="font-display text-2xl font-bold">RateMyCollege</span>
           </Link>
           <p className="mt-4 text-sm text-muted-foreground">
