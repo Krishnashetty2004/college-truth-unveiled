@@ -337,7 +337,7 @@ const CollegeDetail = () => {
                   <MessageSquare className="h-5 w-5 text-primary" />
                   Reviews ({college.total_reviews})
                 </h2>
-                <Link to="/auth">
+                <Link to={`/colleges/${id}/review`}>
                   <Button size="sm">Write a Review</Button>
                 </Link>
               </div>
@@ -356,7 +356,7 @@ const CollegeDetail = () => {
                     <p className="text-xs text-muted-foreground">
                       Be the first to share your experience at {college.short_name || college.name}!
                     </p>
-                    <Link to="/auth">
+                    <Link to={`/colleges/${id}/review`}>
                       <Button size="sm" variant="outline">Write a Review</Button>
                     </Link>
                   </CardContent>
@@ -469,7 +469,7 @@ const CollegeDetail = () => {
               </CardContent>
             </Card>
 
-            <Link to="/auth" className="block">
+            <Link to={`/colleges/${id}/review`} className="block">
               <Button className="w-full bg-gradient-primary hover:opacity-90">
                 Write a Review
               </Button>
