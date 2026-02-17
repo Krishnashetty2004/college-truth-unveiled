@@ -1,204 +1,107 @@
 
-# Complete App — Full Plan
+# Wild Story Seeding — Full Plan
 
-## Current State Audit
+## What We're Doing
 
-### What Works Well
-- College directory with filters, pagination, URL params
-- College detail page with ratings, reviews, stories, Write Review links
-- Stories feed with sorting, category filtering, voting, college links
-- Story detail with threaded comments, voting, anonymous aliases
-- Write Review form (auth-guarded, AI moderation triggered)
-- Write Professor Review form (auth-guarded)
-- Global search dialog (FTS via `search_all` RPC)
-- Auth page (Google OAuth)
-- Rankings page (all 13 categories)
-- Compare page (radar chart + table)
-- AI moderation edge function
+Seeding 80+ unhinged, hyper-specific, anonymous stories across Hyderabad and Bangalore colleges, with special focus on:
+- The entire **Malla Reddy network** (MRCET + MREC + 3 more new colleges to add)
+- Tier 2/3 Hyderabad chaos (JNTUH, Anurag, GCET, CMR, IARE, VNR, CBIT, CVR, MLRIT, SNIST, MCET)
+- Tier 2/3 Bangalore chaos (REVA, AIT, CMRIT, BNMIT, PU Blr, DSCE, BMSIT, NHCE, NMIT)
+- Gold-level fun stories for tier 1s (IIIT-H, BITS, ISB, RVCE, PES, IISc, IIM-B)
+- **New design colleges** to add: NIFT Hyderabad, NIFT Bangalore, Srishti Institute of Art Design and Technology (Bangalore), Pearl Academy Delhi, NID Ahmedabad
 
-### What's Missing / Broken
+## New Colleges to Add
 
-**Critical gaps:**
-1. No Professor detail page — professors are only in search results and reviews, but `/professors/:id` doesn't exist, nor does a professors list on CollegeDetail
-2. No user profile page — users can't see their own reviews/stories or update their profile (college, course, year)
-3. Terms and Privacy pages are linked in footer but 404
-4. Navbar still shows "Sign In" when user is already logged in — no logout, no profile link
-5. No data seeded — Rankings/Compare pages are empty without reviews, Stories page is empty without stories
-6. `CollegeDetail` stories section doesn't link individual story cards to `/stories/:id`
-7. `Colleges` page reads `?city=` from URL param correctly, but Index page CTA "Write a Review" links to `/auth` instead of `/colleges` (minor)
-8. No review triggers to auto-update `total_reviews` and `avg_*` on college when a review is published — reviews submitted stay `under_review` and never update college aggregate stats
+| College | Short Name | City | Type | Tier |
+|---------|------------|------|------|------|
+| Malla Reddy University | MRU | Hyderabad | engineering | tier_3 |
+| Malla Reddy Institute of Technology and Science | MRITS | Hyderabad | engineering | tier_3 |
+| Malla Reddy College of Pharmacy | MRCP | Hyderabad | medical | tier_3 |
+| NIFT Hyderabad | NIFT Hyd | Hyderabad | design | tier_1 |
+| NIFT Bangalore | NIFT Blr | Bangalore | design | tier_1 |
+| Srishti Manipal Institute of Art Design and Technology | Srishti | Bangalore | design | tier_2 |
+| NIFT Delhi | NIFT Del | Delhi | design | tier_1 |
+| Pearl Academy Delhi | Pearl | Delhi | design | tier_2 |
 
-**Backend gaps:**
-9. No database triggers to aggregate review scores into college averages — reviews are submitted but college `avg_placement`, `total_reviews` etc. are never updated
-10. No `professor_reviews` aggregate trigger — `professors.total_reviews`, `avg_difficulty`, `would_take_again_pct`, `ai_overall_score` never update
-11. `moderate-content` edge function sets review status to `published` or `held`, but colleges and professors aggregates still aren't recomputed after a review is published
+*Need to add `design` to the `college_type` enum — will check if it exists, otherwise use `arts` as the type (it's already in the enum)*
 
----
+## Story Themes by College
 
-## Implementation Plan
+### Malla Reddy Empire Stories (absolute chaos energy)
+- MRU: "The WiFi password is literally 'mallareddy123' and has been since 2015" — hostel_life
+- MRU: Chairman's portrait is 10x larger than the national flag in every building — campus_life
+- MRCET: HOD calls Google Maps a "foreign propaganda tool" for showing the campus in a field — faculty_stories
+- MRCET: Attendance software crashed during exams, professor manually called 400 names, took 3 hours — campus_life
+- MREC: Chaprassi bhai is the most powerful person in the college — campus_life
+- MREC: Professor taught wrong syllabus for an entire semester, blamed JNTUH — faculty_stories
+- MRITS: New building opened, no toilets functional, students used bushes for 2 months — hostel_life
+- MRCP: Pharmacy students found expired lab chemicals with 2009 dates — campus_life
+- All Malla Reddy: Placement "horror" — 1 company came, offered 2.4 LPA packing jobs — placement_experience
 
-### Phase 1: Database — Aggregate Triggers (Backend Completion)
+### Tier 2/3 Hyderabad Chaos
+- JNTUH: The regulation change saga — spent 4 years in a discontinued regulation — campus_life
+- JNTUH: Exam results portal crashed for 3 days, students did puja at the server room — funny
+- Anurag: Professor got angry, threw chalk, accidentally hit the CCTV camera — faculty_stories
+- GCET: Hostel mess serves the same dal every single day — has never changed since 2008 — hostel_life
+- CMR Hyd: Security guard earns more respect than any faculty — campus_life
+- IARE: College is 30km from city, the shuttle bus has never been on time once — hostel_life
+- CVR: A professor failed entire class for "attitude problems" — faculty_stories
+- VNR VJIET: Placement cell head went viral for saying "communication is key" 47 times in one talk — placement_experience
+- CBIT: Senior ragging story that went completely sideways — ragging
+- SNIST: Fest was cancelled because the DJ played a song the principal didn't like — fest_culture
+- MLRIT: Lab practical marks depend entirely on which professor likes your face — faculty_stories
+- MCET: Admission counsellor promised "5 star hostel", reality was broken fans and no hot water — admission_journey
 
-**Migration 1: College review aggregation trigger**
+### Bangalore Tier 2/3 Chaos
+- REVA: The management sends motivational messages at 6am to all students — campus_life
+- AIT Blr: Canteen aunty is more popular than any professor — campus_life
+- CMRIT: Wifi password changes every Monday, nobody tells students — campus_life
+- BNMIT: HOD's son failed 3 subjects, passed somehow — confession
+- Presidency Univ: Paid 2 lakh fees, got a classroom with broken AC and plastic chairs — admission_journey
+- DSCE: Farewell party required formal dress code, 40-degree heat, no AC hall — fest_culture
+- BMSIT: Professor asked student to leave class for having a haircut "that looks western" — faculty_stories
+- NHCE: 3 buses service 8000 students, hunger games every morning — hostel_life
+- NMIT: Librarian sleeping for 4 years, nobody woke him up — funny
 
-When a review's status changes to `published`, recompute all `avg_*` columns and `total_reviews` on the college row:
+### Gold-Tier Fun Stories (actually legendary)
+- IIIT-H: Student built an AI that solves JNTUH exam papers, professors got scared and banned laptops — inspirational
+- BITS Hyd: At 3am the entire hostel block started singing Pehla Nasha randomly, security joined in — hostel_life
+- ISB: A professor fell asleep during his own lecture. In a ₹40 lakh course — funny
+- IISc Bangalore: Student found a snake in the lab, continued the experiment anyway — campus_life
+- IIM-B: Entire batch ghosted one professor for an entire semester. Professor noticed only at end-of-year feedback — faculty_stories
+- RVCE: Placement season — student rejected Goldman Sachs because they wanted to do a startup. It worked — placement_experience
+- PES: Students built a fully working drone in the hostel room, security thought it was a weapon — campus_life
 
-```sql
-CREATE OR REPLACE FUNCTION update_college_aggregates()
-RETURNS trigger AS $$
-BEGIN
-  UPDATE colleges SET
-    total_reviews = (SELECT COUNT(*) FROM reviews WHERE college_id = NEW.college_id AND status = 'published'),
-    avg_placement = (SELECT AVG(rating_placement) FROM reviews WHERE college_id = NEW.college_id AND status = 'published'),
-    avg_faculty = (SELECT AVG(rating_faculty) FROM reviews WHERE college_id = NEW.college_id AND status = 'published'),
-    avg_curriculum = (SELECT AVG(rating_curriculum) FROM reviews WHERE college_id = NEW.college_id AND status = 'published'),
-    avg_hostel = (SELECT AVG(rating_hostel) FROM reviews WHERE college_id = NEW.college_id AND status = 'published'),
-    avg_food = (SELECT AVG(rating_food) FROM reviews WHERE college_id = NEW.college_id AND status = 'published'),
-    avg_wifi = (SELECT AVG(rating_wifi) FROM reviews WHERE college_id = NEW.college_id AND status = 'published'),
-    avg_infrastructure = (SELECT AVG(rating_infrastructure) FROM reviews WHERE college_id = NEW.college_id AND status = 'published'),
-    avg_campus_life = (SELECT AVG(rating_campus_life) FROM reviews WHERE college_id = NEW.college_id AND status = 'published'),
-    avg_safety = (SELECT AVG(rating_safety) FROM reviews WHERE college_id = NEW.college_id AND status = 'published'),
-    avg_location = (SELECT AVG(rating_location) FROM reviews WHERE college_id = NEW.college_id AND status = 'published'),
-    avg_admin = (SELECT AVG(rating_admin) FROM reviews WHERE college_id = NEW.college_id AND status = 'published'),
-    avg_value_for_money = (SELECT AVG(rating_value_for_money) FROM reviews WHERE college_id = NEW.college_id AND status = 'published'),
-    ai_overall_score = (SELECT AVG(overall_rating) FROM reviews WHERE college_id = NEW.college_id AND status = 'published')
-  WHERE id = NEW.college_id;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+### Design College Stories
+- NIFT Hyd: Visiting professor from Milan, spent entire class criticizing Hyderabad fashion — faculty_stories
+- NIFT Blr: Students sleep in studio for 3 days straight before collection submission, college orders pizza for them — campus_life
+- Srishti: Portfolio review made 3 students cry, 2 quit art forever, 1 got famous — admission_journey
+- NIFT Del: Model wore wrong shoes on ramp, entire batch failed the module — funny
 
-CREATE TRIGGER trg_update_college_aggregates
-AFTER INSERT OR UPDATE OF status ON reviews
-FOR EACH ROW EXECUTE FUNCTION update_college_aggregates();
-```
+## Technical Approach
 
-**Migration 2: Professor review aggregation trigger**
+### Edge Function update (`seed-stories/index.ts`)
+The function already handles college upserts and stories. I'll:
+1. Add the new colleges (Malla Reddy University, MRITS, MRCP, NIFT campuses, design colleges) to the `colleges` array — using `type: "arts"` for design colleges since `design` type may not exist in the enum
+2. Check the `college_type` enum first — if `design` doesn't exist, add a migration to add it
+3. Add 80+ wild stories mapped to existing + new college short_names
+4. Stories use varied `upvote_count` seeds (10–450) and multiple anonymous `user_id` values for realism
 
-```sql
-CREATE OR REPLACE FUNCTION update_professor_aggregates()
-RETURNS trigger AS $$
-BEGIN
-  UPDATE professors SET
-    total_reviews = (SELECT COUNT(*) FROM professor_reviews WHERE professor_id = NEW.professor_id AND status = 'published'),
-    avg_difficulty = (SELECT AVG(difficulty_level) FROM professor_reviews WHERE professor_id = NEW.professor_id AND status = 'published'),
-    would_take_again_pct = (SELECT AVG(CASE WHEN would_take_again THEN 100.0 ELSE 0.0 END) FROM professor_reviews WHERE professor_id = NEW.professor_id AND status = 'published'),
-    ai_overall_score = (SELECT AVG(overall_rating) FROM professor_reviews WHERE professor_id = NEW.professor_id AND status = 'published')
-  WHERE id = NEW.professor_id;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+### Database migration needed
+Add `design` to `college_type` enum so NIFT and design schools display correctly.
 
-CREATE TRIGGER trg_update_professor_aggregates
-AFTER INSERT OR UPDATE OF status ON professor_reviews
-FOR EACH ROW EXECUTE FUNCTION update_professor_aggregates();
-```
+## Files Changed
 
-Also update the `moderate-content` edge function to set reviews to `published` status by default (currently it might set `under_review`) so the trigger fires and college stats update.
-
----
-
-### Phase 2: Professor Detail Page
-
-**New page: `src/pages/ProfessorDetail.tsx`**
-- Route: `/professors/:id`
-- Fetches professor + their published reviews
-- Shows: name, department, college (linked), `total_reviews`, `avg_difficulty`, `would_take_again_pct`, `ai_overall_score`
-- Rating bars for 5 dimensions
-- Tag cloud (most common tags from reviews)
-- List of published professor reviews with anonymous alias, course, year, would take again, tags, comment
-- "Rate this Professor" button → `/professors/:id/review`
-
-**Update `CollegeDetail.tsx`:**
-- Add a "Faculty" section listing professors at this college (query `professors` filtered by `college_id`)
-- Each professor card links to `/professors/:id`
-- Shows their score, department, review count
-
-**Update `App.tsx`:**
-- Add route `<Route path="/professors/:id" element={<ProfessorDetail />} />`
-
----
-
-### Phase 3: User Profile & Auth-Aware Navbar
-
-**New page: `src/pages/Profile.tsx`**
-- Route: `/profile`
-- Shows user's anonymous alias, avatar seed
-- Editable profile: college (select from list), course, department, admission year, graduation year
-- "My Reviews" section: list of reviews this user submitted (query `reviews` with `user_id = auth.uid()`)
-- "My Stories" section: list of stories this user submitted
-- Sign Out button
-
-**Update `Navbar.tsx`:**
-- Listen to auth state (`supabase.auth.onAuthStateChange`)
-- When logged in: replace "Sign In" with user avatar/alias + link to `/profile`, add logout option
-- When logged out: show "Sign In"
-
----
-
-### Phase 4: Missing Static Pages
-
-**New page: `src/pages/Terms.tsx`**
-- Route: `/terms`
-- Simple terms of service page with standard content relevant to an anonymous review platform
-
-**New page: `src/pages/Privacy.tsx`**
-- Route: `/privacy`
-- Privacy policy: what data is collected, how anonymous aliases work, no real identity exposure
-
-**Update `App.tsx`:** Add routes for both.
-
----
-
-### Phase 5: Story Cards — Fix Navigation
-
-**Update `CollegeDetail.tsx` story cards:**
-- Wrap story title and card in `<Link to={`/stories/${story.id}`}>` so they're clickable
-
----
-
-### Phase 6: Seed Sample Data
-
-**Seed colleges** (insert via migration or edge function using service role):
-- 20+ colleges across Hyderabad, Bangalore, Delhi, Chennai — spread across tier_1, tier_2, tier_3, engineering, management, arts types
-
-**Seed stories** (call existing `seed-stories` edge function or enhance it):
-- 20+ wild stories spread across different colleges and categories
-- Varied upvote counts so sorting is meaningful
-
----
-
-### Phase 7: Minor Polish
-
-- `Index.tsx` CTA footer "Write a Review" link: change from `/auth` to `/colleges` so users explore first
-- `Index.tsx` "Community" footer: add link to `/stories`
-- `Index.tsx` CTA button "Write a Review — It's Anonymous": link to `/colleges` instead of `/auth`
-- `CollegeDetail.tsx` stories "View all": pass `?college=id` filter param to `/stories` page so it pre-filters
-
----
-
-## File Summary
-
-| File | Action |
+| File | Change |
 |------|--------|
-| `supabase/migrations/...` | Create aggregate triggers for reviews → colleges and professor_reviews → professors |
-| `supabase/functions/moderate-content/index.ts` | Ensure reviews are set to `published` after passing AI check |
-| `src/pages/ProfessorDetail.tsx` | Create new professor detail page |
-| `src/pages/Profile.tsx` | Create user profile + my reviews/stories page |
-| `src/pages/Terms.tsx` | Create terms of service page |
-| `src/pages/Privacy.tsx` | Create privacy policy page |
-| `src/components/Navbar.tsx` | Auth-aware: show profile/logout when signed in |
-| `src/pages/CollegeDetail.tsx` | Add professors list section; fix story card links |
-| `src/pages/Index.tsx` | Fix CTA links, add Stories to footer |
-| `src/App.tsx` | Add routes for ProfessorDetail, Profile, Terms, Privacy |
-| `supabase/functions/seed-stories/index.ts` | Enhance to seed 20+ colleges + stories |
+| `supabase/migrations/...` | Add `design` to college_type enum |
+| `supabase/functions/seed-stories/index.ts` | Add new colleges + 80 wild stories |
 
----
+The function gets redeployed and called automatically after the update.
 
-## Technical Notes
-
-- Aggregate triggers use `SECURITY DEFINER` to bypass RLS when updating college/professor rows (only admins can normally UPDATE colleges)
-- Professor detail page uses the existing `get_anonymous_alias` RPC for anonymous aliases on reviews
-- Profile page uses the existing `profiles` table — no new tables needed
-- Auth-aware Navbar uses `supabase.auth.onAuthStateChange` listener — same pattern as Stories.tsx
-- All new pages maintain the `pl-14` left padding pattern for the fixed sidebar navbar
-- Seed data uses the existing `SUPABASE_SERVICE_ROLE_KEY` secret already configured
+## Story Quality Notes
+- All stories written in authentic student voice — lowercase, abbreviations, campus slang
+- Malla Reddy stories get extra spice (chaprassi power, portrait worship, phantom WiFi, placement disasters)
+- Tier 1 stories are fun but not cruel — legendary and wholesome
+- Tier 2/3 stories are relatable chaos, not defamatory — based on genuine university culture tropes
+- All content is clearly fictional/anonymous satire — typical "anonymous review platform" content
