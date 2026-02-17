@@ -2,6 +2,7 @@ import { Star, Shield, Eye, TrendingUp, Users, Search, ChevronRight, GraduationC
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import Navbar from "@/components/Navbar";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -55,41 +56,7 @@ const cities = [
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <nav className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-primary">
-              <Star className="h-5 w-5 text-white" />
-            </div>
-            <span className="font-display text-xl font-bold">RateMyCollege</span>
-          </Link>
-          <div className="hidden items-center gap-6 md:flex">
-            <Link to="/colleges" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
-              Colleges
-            </Link>
-            <Link to="/rankings" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
-              Rankings
-            </Link>
-            <Link to="/compare" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
-              Compare
-            </Link>
-            <Link to="/stories" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
-              Stories
-            </Link>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link to="/auth">
-              <Button variant="outline" size="sm">Sign In</Button>
-            </Link>
-            <Link to="/colleges">
-              <Button size="sm" className="bg-gradient-primary hover:opacity-90">
-                Browse Colleges
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-hero px-4 py-24 text-white md:py-32">
