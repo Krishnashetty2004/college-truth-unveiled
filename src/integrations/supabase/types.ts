@@ -25,6 +25,7 @@ export type Database = {
           id: string
           report_count: number
           status: Database["public"]["Enums"]["content_status"]
+          thumbnail_url: string | null
           title: string
           updated_at: string
           upvote_count: number
@@ -40,6 +41,7 @@ export type Database = {
           id?: string
           report_count?: number
           status?: Database["public"]["Enums"]["content_status"]
+          thumbnail_url?: string | null
           title: string
           updated_at?: string
           upvote_count?: number
@@ -55,6 +57,7 @@ export type Database = {
           id?: string
           report_count?: number
           status?: Database["public"]["Enums"]["content_status"]
+          thumbnail_url?: string | null
           title?: string
           updated_at?: string
           upvote_count?: number

@@ -102,13 +102,32 @@ export default function CreateStoryDialog() {
 
       // 2. Upload images if any
       if (images.length > 0) {
-        for (const img of images) {
+        let firstImageUrl: string | null = null;
+        for (let i = 0; i < images.length; i++) {
+          const img = images[i];
           const ext = img.name.split(".").pop();
           const path = `${user!.id}/${data.id}/${Date.now()}.${ext}`;
           const { error: uploadErr } = await supabase.storage
             .from("story-images")
             .upload(path, img, { contentType: img.type });
-          if (uploadErr) console.error("Image upload failed:", uploadErr.message);
+          if (uploadErr) {
+            console.error("Image upload failed:", uploadErr.message);
+            continue;
+          }
+          // Save first image URL as thumbnail
+          if (i === 0) {
+            const { data: urlData } = supabase.storage
+              .from("story-images")
+              .getPublicUrl(path);
+            firstImageUrl = urlData.publicUrl;
+          }
+        }
+        // Update story with thumbnail_url
+        if (firstImageUrl) {
+          await supabase
+            .from("college_stories")
+            .update({ thumbnail_url: firstImageUrl })
+            .eq("id", data.id);
         }
       }
 

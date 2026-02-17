@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,12 +8,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Loader2, ArrowLeft, Star } from "lucide-react";
+import { Loader2, ArrowLeft, Star, ImagePlus, X } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { Constants } from "@/integrations/supabase/types";
 import type { User } from "@supabase/supabase-js";
 
 const REVIEWER_TYPES = Constants.public.Enums.reviewer_type;
+const MAX_IMAGES = 5;
 
 const ratingCategories = [
   { key: "rating_faculty", label: "Faculty" },
@@ -45,6 +46,29 @@ const WriteReview = () => {
   const [admissionYear, setAdmissionYear] = useState("");
   const [graduationYear, setGraduationYear] = useState("");
   const [ratings, setRatings] = useState<Record<string, number>>({});
+  const [images, setImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const remaining = MAX_IMAGES - images.length;
+    const toAdd = files.slice(0, remaining);
+    setImages((prev) => [...prev, ...toAdd]);
+    toAdd.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setImagePreviews((prev) => [...prev, ev.target?.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removeImage = (idx: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== idx));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== idx));
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -100,6 +124,39 @@ const WriteReview = () => {
         .select("id")
         .single();
       if (error) throw error;
+
+      // Upload images if any
+      if (images.length > 0) {
+        let uploadedCount = 0;
+        for (let i = 0; i < images.length; i++) {
+          const img = images[i];
+          const ext = img.name.split(".").pop();
+          const path = `${user!.id}/${data.id}/${Date.now()}.${ext}`;
+          const { error: uploadErr } = await supabase.storage
+            .from("review-images")
+            .upload(path, img, { contentType: img.type });
+          if (uploadErr) {
+            console.error("Image upload failed:", uploadErr.message);
+            continue;
+          }
+          const { data: urlData } = supabase.storage
+            .from("review-images")
+            .getPublicUrl(path);
+          await supabase.from("review_images").insert({
+            review_id: data.id,
+            image_url: urlData.publicUrl,
+            display_order: i,
+            image_type: "photo",
+          });
+          uploadedCount++;
+        }
+        if (uploadedCount > 0) {
+          await supabase
+            .from("reviews")
+            .update({ has_images: true })
+            .eq("id", data.id);
+        }
+      }
 
       // Trigger AI moderation
       supabase.functions.invoke("moderate-content", {
@@ -221,6 +278,43 @@ const WriteReview = () => {
               <Label className="text-xs">Advice for prospective students</Label>
               <Textarea value={advice} onChange={(e) => setAdvice(e.target.value)} placeholder="What would you tell someone considering this college?" rows={3} className="mt-1" />
             </div>
+          </div>
+
+          {/* Image upload */}
+          <div>
+            <Label className="text-xs">Add Photos <span className="text-muted-foreground">(optional, max {MAX_IMAGES}) — hostel, mess, classrooms etc</span></Label>
+            <div className="mt-1.5 flex flex-wrap gap-2">
+              {imagePreviews.map((src, i) => (
+                <div key={i} className="relative h-20 w-20 rounded-lg overflow-hidden border border-border">
+                  <img src={src} alt="" className="h-full w-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(i)}
+                    className="absolute top-0.5 right-0.5 rounded-full bg-background/80 p-0.5 text-foreground hover:bg-destructive hover:text-white transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+              {images.length < MAX_IMAGES && (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="h-20 w-20 rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+                >
+                  <ImagePlus className="h-5 w-5" />
+                  <span className="text-[10px]">Add</span>
+                </button>
+              )}
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              multiple
+              className="hidden"
+              onChange={handleImageSelect}
+            />
           </div>
 
           <Button
