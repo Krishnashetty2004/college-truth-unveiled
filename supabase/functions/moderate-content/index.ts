@@ -110,7 +110,8 @@ Return ONLY valid JSON, no markdown.`,
     });
   } catch (error) {
     console.error("Moderation error:", error);
-    return new Response(JSON.stringify({ error: error.message, moderated: false }), {
+    const msg = error instanceof Error ? error.message : String(error);
+    return new Response(JSON.stringify({ error: msg, moderated: false }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

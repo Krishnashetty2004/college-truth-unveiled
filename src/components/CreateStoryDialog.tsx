@@ -124,7 +124,7 @@ export default function CreateStoryDialog() {
         }
         // Update story with thumbnail_url
         if (firstImageUrl) {
-          await supabase
+          await (supabase as any)
             .from("college_stories")
             .update({ thumbnail_url: firstImageUrl })
             .eq("id", data.id);

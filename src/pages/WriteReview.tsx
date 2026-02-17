@@ -142,12 +142,12 @@ const WriteReview = () => {
           const { data: urlData } = supabase.storage
             .from("review-images")
             .getPublicUrl(path);
-          await supabase.from("review_images").insert({
+          await supabase.from("review_images").insert([{
             review_id: data.id,
             image_url: urlData.publicUrl,
             display_order: i,
-            image_type: "photo",
-          });
+            image_type: "other" as const,
+          }]);
           uploadedCount++;
         }
         if (uploadedCount > 0) {

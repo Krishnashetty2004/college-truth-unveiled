@@ -173,25 +173,25 @@ const StoryDetail = () => {
     enabled: !!id,
   });
 
-  // Fetch story images from storage
+  // Fetch story images from storage - use thumbnail_url from story record
+  // Images are stored at userId/storyId/filename — we read them via the thumbnail stored on the story.
+  // For additional images, list from the story's own subfolder using user_id from the story.
   const { data: storyImages } = useQuery({
-    queryKey: ["story-images", id],
+    queryKey: ["story-images", id, story?.user_id],
     queryFn: async () => {
-      if (!id) return [];
-      // List files under story-images/<any-user-id>/<storyId>/
-      // We search by listing and filtering — storage doesn't support cross-folder listing easily
-      // so we store path as userId/storyId/filename and list from storage
-      const { data } = await supabase.storage.from("story-images").list("", {
-        search: id,
-      });
+      if (!id || !story?.user_id) return [];
+      // Only list files under the specific user+story folder — prevents cross-user leakage
+      const folderPath = `${story.user_id}/${id}`;
+      const { data } = await supabase.storage.from("story-images").list(folderPath);
       if (!data) return [];
-      // Build public URLs for matched files
       return data.map((f) => {
-        const { data: urlData } = supabase.storage.from("story-images").getPublicUrl(f.name);
+        const { data: urlData } = supabase.storage
+          .from("story-images")
+          .getPublicUrl(`${folderPath}/${f.name}`);
         return urlData.publicUrl;
       });
     },
-    enabled: !!id,
+    enabled: !!id && !!story?.user_id,
   });
 
   const { data: hasVoted } = useQuery({
@@ -218,11 +218,18 @@ const StoryDetail = () => {
         .order("created_at", { ascending: true });
       if (error) throw error;
 
+      // Fetch all unique user aliases in parallel (not N+1 serial loop)
       const userIds = [...new Set((data || []).map((c) => c.user_id))];
       const aliasMap: Record<string, string> = {};
-      for (const uid of userIds) {
-        const { data: alias } = await supabase.rpc("get_anonymous_alias", { _user_id: uid });
-        if (alias) aliasMap[uid] = alias;
+      if (userIds.length > 0) {
+        const aliasResults = await Promise.all(
+          userIds.map((uid) =>
+            supabase.rpc("get_anonymous_alias", { _user_id: uid }).then(({ data: alias }) => ({ uid, alias }))
+          )
+        );
+        aliasResults.forEach(({ uid, alias }) => {
+          if (alias) aliasMap[uid] = alias;
+        });
       }
 
       const enriched: CommentWithAlias[] = (data || []).map((c) => ({
