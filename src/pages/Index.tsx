@@ -55,7 +55,7 @@ const cities = [
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pl-14">
       <Navbar />
 
       {/* Hero — Terrain-inspired centered minimal */}
