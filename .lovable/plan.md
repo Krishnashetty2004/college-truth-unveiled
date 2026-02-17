@@ -1,107 +1,109 @@
 
-# Wild Story Seeding — Full Plan
+# Three Features: Review Image Upload + Story Feed Thumbnails + Share Buttons
 
-## What We're Doing
+## Overview
 
-Seeding 80+ unhinged, hyper-specific, anonymous stories across Hyderabad and Bangalore colleges, with special focus on:
-- The entire **Malla Reddy network** (MRCET + MREC + 3 more new colleges to add)
-- Tier 2/3 Hyderabad chaos (JNTUH, Anurag, GCET, CMR, IARE, VNR, CBIT, CVR, MLRIT, SNIST, MCET)
-- Tier 2/3 Bangalore chaos (REVA, AIT, CMRIT, BNMIT, PU Blr, DSCE, BMSIT, NHCE, NMIT)
-- Gold-level fun stories for tier 1s (IIIT-H, BITS, ISB, RVCE, PES, IISc, IIM-B)
-- **New design colleges** to add: NIFT Hyderabad, NIFT Bangalore, Srishti Institute of Art Design and Technology (Bangalore), Pearl Academy Delhi, NID Ahmedabad
+Three distinct improvements to add simultaneously:
 
-## New Colleges to Add
+1. **Image upload on college reviews** — attach up to 5 photos (hostel, mess, classroom) when writing a review, stored in the existing `review-images` bucket and tracked in the `review_images` table.
+2. **Story image thumbnails in the feed** — fetch the first image for each story from the `story-images` storage bucket and show it as a thumbnail on the Stories list page.
+3. **WhatsApp + Twitter/X share buttons** — on each story card in the feed, two icon buttons that open pre-filled share links.
 
-| College | Short Name | City | Type | Tier |
-|---------|------------|------|------|------|
-| Malla Reddy University | MRU | Hyderabad | engineering | tier_3 |
-| Malla Reddy Institute of Technology and Science | MRITS | Hyderabad | engineering | tier_3 |
-| Malla Reddy College of Pharmacy | MRCP | Hyderabad | medical | tier_3 |
-| NIFT Hyderabad | NIFT Hyd | Hyderabad | design | tier_1 |
-| NIFT Bangalore | NIFT Blr | Bangalore | design | tier_1 |
-| Srishti Manipal Institute of Art Design and Technology | Srishti | Bangalore | design | tier_2 |
-| NIFT Delhi | NIFT Del | Delhi | design | tier_1 |
-| Pearl Academy Delhi | Pearl | Delhi | design | tier_2 |
+---
 
-*Need to add `design` to the `college_type` enum — will check if it exists, otherwise use `arts` as the type (it's already in the enum)*
+## Feature 1 — Review Image Upload in `WriteReview.tsx`
 
-## Story Themes by College
+The `reviews` table already has a `has_images` boolean column and the `review_images` table exists with the correct schema (`review_id`, `image_url`, `display_order`, `image_type`). The `review-images` storage bucket is already public. No schema changes needed.
 
-### Malla Reddy Empire Stories (absolute chaos energy)
-- MRU: "The WiFi password is literally 'mallareddy123' and has been since 2015" — hostel_life
-- MRU: Chairman's portrait is 10x larger than the national flag in every building — campus_life
-- MRCET: HOD calls Google Maps a "foreign propaganda tool" for showing the campus in a field — faculty_stories
-- MRCET: Attendance software crashed during exams, professor manually called 400 names, took 3 hours — campus_life
-- MREC: Chaprassi bhai is the most powerful person in the college — campus_life
-- MREC: Professor taught wrong syllabus for an entire semester, blamed JNTUH — faculty_stories
-- MRITS: New building opened, no toilets functional, students used bushes for 2 months — hostel_life
-- MRCP: Pharmacy students found expired lab chemicals with 2009 dates — campus_life
-- All Malla Reddy: Placement "horror" — 1 company came, offered 2.4 LPA packing jobs — placement_experience
+**Implementation in `src/pages/WriteReview.tsx`:**
 
-### Tier 2/3 Hyderabad Chaos
-- JNTUH: The regulation change saga — spent 4 years in a discontinued regulation — campus_life
-- JNTUH: Exam results portal crashed for 3 days, students did puja at the server room — funny
-- Anurag: Professor got angry, threw chalk, accidentally hit the CCTV camera — faculty_stories
-- GCET: Hostel mess serves the same dal every single day — has never changed since 2008 — hostel_life
-- CMR Hyd: Security guard earns more respect than any faculty — campus_life
-- IARE: College is 30km from city, the shuttle bus has never been on time once — hostel_life
-- CVR: A professor failed entire class for "attitude problems" — faculty_stories
-- VNR VJIET: Placement cell head went viral for saying "communication is key" 47 times in one talk — placement_experience
-- CBIT: Senior ragging story that went completely sideways — ragging
-- SNIST: Fest was cancelled because the DJ played a song the principal didn't like — fest_culture
-- MLRIT: Lab practical marks depend entirely on which professor likes your face — faculty_stories
-- MCET: Admission counsellor promised "5 star hostel", reality was broken fans and no hot water — admission_journey
+- Add state: `images: File[]`, `imagePreviews: string[]`, `fileInputRef`
+- Add an "Add Photos" section below the Advice field — same pattern as `CreateStoryDialog.tsx` (max 5 images, 80×80 preview tiles with ×remove button, dashed add button)
+- In `mutation.mutationFn`, after the review is inserted and we have `data.id`:
+  1. Loop through `images`, upload each to `review-images` bucket at path `{user.id}/{data.id}/{timestamp}.{ext}`
+  2. For each successful upload, get the public URL via `supabase.storage.from("review-images").getPublicUrl(path)`
+  3. Insert a row into `review_images` table: `{ review_id: data.id, image_url, display_order: i, image_type: "other" }`
+  4. If any images uploaded successfully, do `UPDATE reviews SET has_images = true WHERE id = data.id`
 
-### Bangalore Tier 2/3 Chaos
-- REVA: The management sends motivational messages at 6am to all students — campus_life
-- AIT Blr: Canteen aunty is more popular than any professor — campus_life
-- CMRIT: Wifi password changes every Monday, nobody tells students — campus_life
-- BNMIT: HOD's son failed 3 subjects, passed somehow — confession
-- Presidency Univ: Paid 2 lakh fees, got a classroom with broken AC and plastic chairs — admission_journey
-- DSCE: Farewell party required formal dress code, 40-degree heat, no AC hall — fest_culture
-- BMSIT: Professor asked student to leave class for having a haircut "that looks western" — faculty_stories
-- NHCE: 3 buses service 8000 students, hunger games every morning — hostel_life
-- NMIT: Librarian sleeping for 4 years, nobody woke him up — funny
+**UI details:**
+- Accept: `image/jpeg,image/png,image/webp`
+- Max 5 files (matches the memory note: "up to 5 proof images per review")
+- Shown between the Advice textarea and the Submit button
+- Label: "Add Photos (optional, max 5) — hostel, mess, classrooms etc"
 
-### Gold-Tier Fun Stories (actually legendary)
-- IIIT-H: Student built an AI that solves JNTUH exam papers, professors got scared and banned laptops — inspirational
-- BITS Hyd: At 3am the entire hostel block started singing Pehla Nasha randomly, security joined in — hostel_life
-- ISB: A professor fell asleep during his own lecture. In a ₹40 lakh course — funny
-- IISc Bangalore: Student found a snake in the lab, continued the experiment anyway — campus_life
-- IIM-B: Entire batch ghosted one professor for an entire semester. Professor noticed only at end-of-year feedback — faculty_stories
-- RVCE: Placement season — student rejected Goldman Sachs because they wanted to do a startup. It worked — placement_experience
-- PES: Students built a fully working drone in the hostel room, security thought it was a weapon — campus_life
+---
 
-### Design College Stories
-- NIFT Hyd: Visiting professor from Milan, spent entire class criticizing Hyderabad fashion — faculty_stories
-- NIFT Blr: Students sleep in studio for 3 days straight before collection submission, college orders pizza for them — campus_life
-- Srishti: Portfolio review made 3 students cry, 2 quit art forever, 1 got famous — admission_journey
-- NIFT Del: Model wore wrong shoes on ramp, entire batch failed the module — funny
+## Feature 2 — Story Image Thumbnails in the Feed
 
-## Technical Approach
+The `story-images` bucket stores images at path `{userId}/{storyId}/{timestamp}.{ext}`. There is no column in `college_stories` tracking image URLs. The current story query fetches all stories at once.
 
-### Edge Function update (`seed-stories/index.ts`)
-The function already handles college upserts and stories. I'll:
-1. Add the new colleges (Malla Reddy University, MRITS, MRCP, NIFT campuses, design colleges) to the `colleges` array — using `type: "arts"` for design colleges since `design` type may not exist in the enum
-2. Check the `college_type` enum first — if `design` doesn't exist, add a migration to add it
-3. Add 80+ wild stories mapped to existing + new college short_names
-4. Stories use varied `upvote_count` seeds (10–450) and multiple anonymous `user_id` values for realism
+**Approach — Batch fetch story image paths client-side:**
 
-### Database migration needed
-Add `design` to `college_type` enum so NIFT and design schools display correctly.
+After the stories list loads, make a single batch call to `supabase.storage.from("story-images").list()` for each story that has images. However, since the bucket path includes `userId/storyId/`, we can't batch-list without knowing user IDs.
+
+**Better approach — Add a `thumbnail_url` column to `college_stories`:**
+
+When a story is created and images are uploaded in `CreateStoryDialog.tsx`, save the first image's public URL into a new `thumbnail_url` nullable text column on `college_stories`. This is clean, efficient, and avoids N+1 storage API calls on every feed render.
+
+**Database migration:**
+```sql
+ALTER TABLE public.college_stories ADD COLUMN IF NOT EXISTS thumbnail_url text;
+```
+
+**CreateStoryDialog.tsx update:**
+- After uploading the first image, get its public URL
+- Update the story row: `UPDATE college_stories SET thumbnail_url = <url> WHERE id = data.id`
+
+**StoryCard in `Stories.tsx` update:**
+- If `story.thumbnail_url` exists, show a `64×64` rounded image thumbnail to the right of the text content, inside the card
+- The thumbnail links to the story detail page
+- On mobile it shows full-width below the text as a thin strip
+
+**Type:**
+- `StoryWithCollege` type gets the new `thumbnail_url` field automatically once the migration runs and types regenerate
+
+---
+
+## Feature 3 — WhatsApp + Twitter/X Share Buttons on Story Cards
+
+**Implementation in `StoryCard` component in `Stories.tsx`:**
+
+Add two icon buttons at the end of the bottom action bar (after comments link):
+
+```
+[ ↑ 42 ↓ ]  [ 💬 12 comments ]  [ WhatsApp icon ]  [ X/Twitter icon ]
+```
+
+**Share URLs:**
+- **WhatsApp:** `https://wa.me/?text={encodeURIComponent(text + url)}`
+  - Text: `"${story.title} — RateMyCollege\n${window.location.origin}/stories/${story.id}"`
+- **Twitter/X:** `https://twitter.com/intent/tweet?text={encodeURIComponent(title)}&url={encodeURIComponent(url)}`
+
+Both open in `target="_blank" rel="noopener noreferrer"`.
+
+**Icons:** Use lucide-react's `Share2` icon for WhatsApp (green tint) and a simple SVG X logo for Twitter since lucide doesn't have a Twitter/X icon. Alternative: use text labels "WA" and "𝕏" as small badges.
+
+**Practical approach — use text labels to keep it simple and recognizable:**
+- WhatsApp: green `<a>` with "📱 Share" or just a WhatsApp SVG inline
+- Twitter: `𝕏` character in a link
+
+---
 
 ## Files Changed
 
 | File | Change |
 |------|--------|
-| `supabase/migrations/...` | Add `design` to college_type enum |
-| `supabase/functions/seed-stories/index.ts` | Add new colleges + 80 wild stories |
+| `supabase/migrations/...` | Add `thumbnail_url` column to `college_stories` |
+| `src/pages/WriteReview.tsx` | Add image upload UI + upload logic to `review-images` bucket + insert into `review_images` table |
+| `src/pages/Stories.tsx` | Show thumbnail in `StoryCard` + add WhatsApp/Twitter share buttons |
+| `src/components/CreateStoryDialog.tsx` | After first image upload, save public URL into `thumbnail_url` on the story row |
 
-The function gets redeployed and called automatically after the update.
+---
 
-## Story Quality Notes
-- All stories written in authentic student voice — lowercase, abbreviations, campus slang
-- Malla Reddy stories get extra spice (chaprassi power, portrait worship, phantom WiFi, placement disasters)
-- Tier 1 stories are fun but not cruel — legendary and wholesome
-- Tier 2/3 stories are relatable chaos, not defamatory — based on genuine university culture tropes
-- All content is clearly fictional/anonymous satire — typical "anonymous review platform" content
+## Technical Notes
+
+- No new storage buckets needed — `review-images` and `story-images` already exist and are public
+- The `review_images` table RLS already allows authenticated users to insert images for their own reviews
+- Share buttons use native `window.open` / `<a href>` — no library needed
+- The `thumbnail_url` migration is additive (nullable column) — zero risk to existing data
+- WhatsApp deep links work on both mobile (opens app) and desktop (opens web.whatsapp.com)
