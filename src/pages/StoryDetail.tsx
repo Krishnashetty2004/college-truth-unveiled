@@ -327,6 +327,57 @@ const StoryDetail = () => {
       if (error) throw error;
       return data as { vote: number; upvotes: number; downvotes: number };
     },
+    onMutate: async (voteType) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["story", id] });
+
+      // Snapshot current state
+      const prevStory = queryClient.getQueryData<StoryWithCollege>(["story", id]);
+      const prevVote = queryClient.getQueryData<number>(["user-vote", user?.id, id]);
+
+      const currentVote = userVote ?? 0;
+
+      // Optimistically update story
+      if (prevStory) {
+        let upDelta = 0;
+        let downDelta = 0;
+
+        if (currentVote === voteType) {
+          // Toggling off same vote
+          if (voteType === 1) upDelta = -1;
+          else downDelta = -1;
+        } else if (currentVote === 0) {
+          // New vote
+          if (voteType === 1) upDelta = 1;
+          else downDelta = 1;
+        } else {
+          // Switching vote
+          if (voteType === 1) { upDelta = 1; downDelta = -1; }
+          else { upDelta = -1; downDelta = 1; }
+        }
+
+        queryClient.setQueryData(["story", id], {
+          ...prevStory,
+          upvote_count: Math.max(0, (prevStory.upvote_count || 0) + upDelta),
+          downvote_count: Math.max(0, ((prevStory as any).downvote_count || 0) + downDelta),
+        });
+      }
+
+      // Optimistically update user vote
+      const newVote = currentVote === voteType ? 0 : voteType;
+      queryClient.setQueryData(["user-vote", user?.id, id], newVote);
+
+      return { prevStory, prevVote };
+    },
+    onError: (_err, _voteType, context) => {
+      // Rollback on error
+      if (context?.prevStory) {
+        queryClient.setQueryData(["story", id], context.prevStory);
+      }
+      if (context?.prevVote !== undefined) {
+        queryClient.setQueryData(["user-vote", user?.id, id], context.prevVote);
+      }
+    },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["story", id] });
       queryClient.invalidateQueries({ queryKey: ["user-vote"] });

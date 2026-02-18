@@ -303,7 +303,73 @@ const Stories = () => {
         p_vote_type: voteType,
       });
       if (error) throw error;
-      return data as { vote: number; upvotes: number; downvotes: number };
+      return { ...data, storyId, voteType } as { vote: number; upvotes: number; downvotes: number; storyId: string; voteType: number };
+    },
+    onMutate: async ({ storyId, voteType }) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["stories"] });
+
+      // Snapshot current state
+      const prevStories = queryClient.getQueryData<StoryWithCollege[]>(["stories", sort, activeCategory]);
+      const prevVotes = queryClient.getQueryData<Map<string, number>>(["user-votes", user?.id, storyIds]);
+
+      // Get current vote for this story
+      const currentVote = votedSet?.get(storyId) ?? 0;
+
+      // Optimistically update stories
+      if (prevStories) {
+        queryClient.setQueryData(
+          ["stories", sort, activeCategory],
+          prevStories.map((s) => {
+            if (s.id !== storyId) return s;
+
+            let upDelta = 0;
+            let downDelta = 0;
+
+            if (currentVote === voteType) {
+              // Toggling off same vote
+              if (voteType === 1) upDelta = -1;
+              else downDelta = -1;
+            } else if (currentVote === 0) {
+              // New vote
+              if (voteType === 1) upDelta = 1;
+              else downDelta = 1;
+            } else {
+              // Switching vote
+              if (voteType === 1) { upDelta = 1; downDelta = -1; }
+              else { upDelta = -1; downDelta = 1; }
+            }
+
+            return {
+              ...s,
+              upvote_count: Math.max(0, (s.upvote_count || 0) + upDelta),
+              downvote_count: Math.max(0, ((s as any).downvote_count || 0) + downDelta),
+            };
+          })
+        );
+      }
+
+      // Optimistically update user votes
+      if (prevVotes) {
+        const newVotes = new Map(prevVotes);
+        if (currentVote === voteType) {
+          newVotes.delete(storyId);
+        } else {
+          newVotes.set(storyId, voteType);
+        }
+        queryClient.setQueryData(["user-votes", user?.id, storyIds], newVotes);
+      }
+
+      return { prevStories, prevVotes };
+    },
+    onError: (_err, _vars, context) => {
+      // Rollback on error
+      if (context?.prevStories) {
+        queryClient.setQueryData(["stories", sort, activeCategory], context.prevStories);
+      }
+      if (context?.prevVotes) {
+        queryClient.setQueryData(["user-votes", user?.id, storyIds], context.prevVotes);
+      }
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["stories"] });
