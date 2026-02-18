@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import type { User } from "@supabase/supabase-js";
@@ -11,10 +11,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 import {
   MapPin, Calendar, Users, Globe, ArrowLeft, Star,
   GraduationCap, MessageSquare, TrendingUp, AlertCircle,
-  BookOpen, ArrowBigUp, ChevronRight, UserCheck, LogIn,
+  BookOpen, ArrowBigUp, ArrowBigDown, ChevronRight, UserCheck, LogIn,
 } from "lucide-react";
 
 type College = Tables<"colleges">;
@@ -66,64 +67,116 @@ function RatingBar({ label, value }: { label: string; value: number | null }) {
 
 const FAKE_USER_ID = "00000000-0000-0000-0000-000000000000";
 
-function ReviewCard({ review }: { review: Review }) {
+function ReviewCard({
+  review,
+  userVote,
+  onVote,
+  isVoting,
+  canVote,
+}: {
+  review: Review & { downvote_count?: number };
+  userVote?: number;
+  onVote?: (voteType: 1 | -1) => void;
+  isVoting?: boolean;
+  canVote?: boolean;
+}) {
   const isVerified = review.user_id !== FAKE_USER_ID;
+  const netScore = (review.helpful_count || 0) - (review.downvote_count || 0);
 
   return (
     <Card className={isVerified ? "border-primary/30 bg-primary/5" : ""}>
       <CardContent className="p-5">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <h4 className="font-display font-semibold">{review.title}</h4>
-              {isVerified && (
-                <Badge className="bg-emerald-500 text-white text-[10px] px-1.5 py-0 h-5 gap-1">
-                  <UserCheck className="h-3 w-3" />
-                  Verified
-                </Badge>
+        <div className="flex items-start gap-3">
+          {/* Voting buttons */}
+          <div className="flex flex-col items-center gap-0.5 pt-1">
+            <button
+              onClick={() => onVote?.(1)}
+              disabled={!canVote || isVoting}
+              className={cn(
+                "p-1 rounded transition-colors",
+                canVote && "hover:bg-muted",
+                !canVote && "opacity-50 cursor-not-allowed",
+                userVote === 1 && "text-primary"
+              )}
+            >
+              <ArrowBigUp className={cn("h-5 w-5", userVote === 1 && "fill-primary")} />
+            </button>
+            <span className={cn(
+              "text-sm font-bold min-w-[2ch] text-center",
+              netScore > 0 && "text-primary",
+              netScore < 0 && "text-destructive"
+            )}>
+              {netScore}
+            </span>
+            <button
+              onClick={() => onVote?.(-1)}
+              disabled={!canVote || isVoting}
+              className={cn(
+                "p-1 rounded transition-colors",
+                canVote && "hover:bg-muted",
+                !canVote && "opacity-50 cursor-not-allowed",
+                userVote === -1 && "text-destructive"
+              )}
+            >
+              <ArrowBigDown className={cn("h-5 w-5", userVote === -1 && "fill-destructive")} />
+            </button>
+          </div>
+
+          {/* Review content */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <h4 className="font-display font-semibold">{review.title}</h4>
+                  {isVerified && (
+                    <Badge className="bg-emerald-500 text-white text-[10px] px-1.5 py-0 h-5 gap-1">
+                      <UserCheck className="h-3 w-3" />
+                      Verified
+                    </Badge>
+                  )}
+                </div>
+                <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                  <Badge variant="secondary" className="capitalize text-xs">
+                    {review.reviewer_type.replace("_", " ")}
+                  </Badge>
+                  {review.course && <span>• {review.course}</span>}
+                  {review.department && <span>• {review.department}</span>}
+                </div>
+              </div>
+              {review.overall_rating && (
+                <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary/30 bg-primary/5">
+                  <span className="font-display text-sm font-bold text-primary">
+                    {Number(review.overall_rating).toFixed(1)}
+                  </span>
+                </div>
               )}
             </div>
-            <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-              <Badge variant="secondary" className="capitalize text-xs">
-                {review.reviewer_type.replace("_", " ")}
-              </Badge>
-              {review.course && <span>• {review.course}</span>}
-              {review.department && <span>• {review.department}</span>}
-            </div>
-          </div>
-          {review.overall_rating && (
-            <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary/30 bg-primary/5">
-              <span className="font-display text-sm font-bold text-primary">
-                {Number(review.overall_rating).toFixed(1)}
-              </span>
-            </div>
-          )}
-        </div>
 
-        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          {review.content}
-        </p>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+              {review.content}
+            </p>
 
-        {(review.pros || review.cons) && (
-          <div className="mt-3 grid gap-2 sm:grid-cols-2">
-            {review.pros && (
-              <div className="rounded-lg bg-emerald-500/5 p-3">
-                <p className="text-xs font-medium text-emerald-700">Pros</p>
-                <p className="mt-1 text-xs text-muted-foreground">{review.pros}</p>
+            {(review.pros || review.cons) && (
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                {review.pros && (
+                  <div className="rounded-lg bg-emerald-500/5 p-3">
+                    <p className="text-xs font-medium text-emerald-700">Pros</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{review.pros}</p>
+                  </div>
+                )}
+                {review.cons && (
+                  <div className="rounded-lg bg-red-500/5 p-3">
+                    <p className="text-xs font-medium text-red-700">Cons</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{review.cons}</p>
+                  </div>
+                )}
               </div>
             )}
-            {review.cons && (
-              <div className="rounded-lg bg-red-500/5 p-3">
-                <p className="text-xs font-medium text-red-700">Cons</p>
-                <p className="mt-1 text-xs text-muted-foreground">{review.cons}</p>
-              </div>
-            )}
-          </div>
-        )}
 
-        <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
-          <span>{new Date(review.created_at).toLocaleDateString()}</span>
-          <span>{review.helpful_count} found helpful</span>
+            <div className="mt-3 text-xs text-muted-foreground">
+              {new Date(review.created_at).toLocaleDateString()}
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -133,6 +186,7 @@ function ReviewCard({ review }: { review: Review }) {
 const CollegeDetail = () => {
   const { id } = useParams<{ id: string }>();
   const [user, setUser] = useState<User | null>(null);
+  const queryClient = useQueryClient();
 
   // Auth listener
   useEffect(() => {
@@ -238,6 +292,49 @@ const CollegeDetail = () => {
     enabled: !!id,
   });
 
+  // Fetch user's votes for reviews
+  const { data: userVotes } = useQuery({
+    queryKey: ["user-review-votes", user?.id, id],
+    queryFn: async () => {
+      const reviewIds = reviews?.map((r) => r.id) || [];
+      if (reviewIds.length === 0) return {};
+      const { data } = await supabase
+        .from("helpful_votes")
+        .select("review_id, vote_type")
+        .eq("user_id", user!.id)
+        .in("review_id", reviewIds);
+      return (
+        data?.reduce(
+          (acc, v) => ({ ...acc, [v.review_id!]: v.vote_type }),
+          {} as Record<string, number>
+        ) || {}
+      );
+    },
+    enabled: !!user && !!reviews?.length,
+  });
+
+  // Vote mutation
+  const voteMutation = useMutation({
+    mutationFn: async ({
+      reviewId,
+      voteType,
+    }: {
+      reviewId: string;
+      voteType: 1 | -1;
+    }) => {
+      const { data, error } = await supabase.rpc("vote_review", {
+        p_review_id: reviewId,
+        p_user_id: user!.id,
+        p_vote_type: voteType,
+      });
+      if (error) throw error;
+      return { reviewId, ...(data as { vote: number; upvotes: number; downvotes: number }) };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["college-reviews", id] });
+      queryClient.invalidateQueries({ queryKey: ["user-review-votes", user?.id, id] });
+    },
+  });
 
   if (isLoading) {
     return (
@@ -441,7 +538,16 @@ const CollegeDetail = () => {
               {reviews && reviews.length > 0 ? (
                 <div className="space-y-4">
                   {reviews.map((review) => (
-                    <ReviewCard key={review.id} review={review} />
+                    <ReviewCard
+                      key={review.id}
+                      review={review}
+                      userVote={userVotes?.[review.id]}
+                      onVote={(voteType) =>
+                        voteMutation.mutate({ reviewId: review.id, voteType })
+                      }
+                      isVoting={voteMutation.isPending}
+                      canVote={!!user}
+                    />
                   ))}
                 </div>
               ) : (
