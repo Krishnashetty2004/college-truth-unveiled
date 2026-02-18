@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowBigUp, ArrowBigDown, MessageCircle, ArrowLeft, Send, Reply, Loader2, ImageIcon } from "lucide-react";
+import { ArrowBigUp, ArrowBigDown, MessageCircle, ArrowLeft, Send, Reply, Loader2, ImageIcon, Instagram } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import Navbar from "@/components/Navbar";
+import ShareStoryCard from "@/components/ShareStoryCard";
 import { motion } from "framer-motion";
 import type { Tables } from "@/integrations/supabase/types";
 import type { User } from "@supabase/supabase-js";
@@ -160,6 +161,7 @@ const StoryDetail = () => {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState("");
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
@@ -477,6 +479,13 @@ const StoryDetail = () => {
                   <MessageCircle className="h-3.5 w-3.5" />
                   {story.comment_count} comments
                 </span>
+                <button
+                  onClick={() => setShowShareModal(true)}
+                  className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 text-white text-xs font-medium hover:opacity-90 transition-opacity"
+                >
+                  <Instagram className="h-3.5 w-3.5" />
+                  Share Story
+                </button>
               </div>
             </div>
           </div>
@@ -543,6 +552,21 @@ const StoryDetail = () => {
           )}
         </div>
       </main>
+
+      {/* Instagram Share Modal */}
+      <ShareStoryCard
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        story={{
+          id: story.id,
+          title: story.title,
+          content: story.content,
+          category: story.category,
+          upvote_count: story.upvote_count,
+          downvote_count: (story as any).downvote_count,
+        }}
+        collegeName={story.colleges?.short_name || story.colleges?.name || "Anonymous College"}
+      />
     </div>
   );
 };
