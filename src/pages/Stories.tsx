@@ -67,45 +67,55 @@ function useStories(sort: SortMode, category?: string) {
   });
 }
 
+// Returns a map of storyId -> voteType (1 = upvote, -1 = downvote)
 function useUserVotes(user: User | null, storyIds: string[]) {
   return useQuery({
     queryKey: ["user-votes", user?.id, storyIds],
     queryFn: async () => {
-      if (!user || storyIds.length === 0) return new Set<string>();
+      if (!user || storyIds.length === 0) return new Map<string, number>();
       const { data } = await supabase
         .from("helpful_votes")
-        .select("story_id")
+        .select("story_id, vote_type")
         .eq("user_id", user.id)
         .in("story_id", storyIds);
-      return new Set((data || []).map((v) => v.story_id).filter(Boolean) as string[]);
+      const map = new Map<string, number>();
+      (data || []).forEach((v) => {
+        if (v.story_id) map.set(v.story_id, v.vote_type || 1);
+      });
+      return map;
     },
     enabled: !!user && storyIds.length > 0,
   });
 }
 
-function timeAgo(dateStr: string) {
-  // Ensure UTC parsing: Supabase returns ISO strings, add Z if missing
-  const date = new Date(dateStr.endsWith("Z") ? dateStr : dateStr + "Z");
-  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (seconds < 5) return "just now";
-  if (seconds < 60) return `${seconds}s ago`;
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
-  return `${Math.floor(seconds / 604800)}w ago`;
+function timeAgo(dateStr: string | null | undefined) {
+  if (!dateStr) return "just now";
+  try {
+    const date = new Date(dateStr);
+    const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+    if (isNaN(seconds) || seconds < 0) return "just now";
+    if (seconds < 5) return "just now";
+    if (seconds < 60) return `${seconds}s ago`;
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+    if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+    return `${Math.floor(seconds / 604800)}w ago`;
+  } catch {
+    return "just now";
+  }
 }
 
 function StoryCard({
   story,
   index,
-  hasVoted,
+  userVote,
   onVote,
   isVoting,
 }: {
   story: StoryWithCollege;
   index: number;
-  hasVoted: boolean;
-  onVote: (storyId: string) => void;
+  userVote: number; // 1 = upvoted, -1 = downvoted, 0 = no vote
+  onVote: (storyId: string, voteType: number) => void;
   isVoting: boolean;
 }) {
   const catInfo = categoryLabels[story.category] || categoryLabels.other;
@@ -181,19 +191,25 @@ function StoryCard({
           <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
             <div className="flex items-center gap-1">
               <button
-                onClick={() => onVote(story.id)}
+                onClick={() => onVote(story.id, 1)}
                 disabled={isVoting}
                 className={`rounded p-0.5 transition-colors ${
-                  hasVoted ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                  userVote === 1 ? "text-primary" : "text-muted-foreground hover:text-primary"
                 }`}
               >
-                <ArrowBigUp className={`h-4 w-4 ${hasVoted ? "fill-primary" : ""}`} />
+                <ArrowBigUp className={`h-4 w-4 ${userVote === 1 ? "fill-primary" : ""}`} />
               </button>
-              <span className={`font-bold ${hasVoted ? "text-primary" : ""}`}>
-                {story.upvote_count}
+              <span className={`font-bold ${userVote === 1 ? "text-primary" : userVote === -1 ? "text-destructive" : ""}`}>
+                {(story.upvote_count || 0) - ((story as any).downvote_count || 0)}
               </span>
-              <button className="rounded p-0.5 text-muted-foreground transition-colors hover:text-foreground">
-                <ArrowBigDown className="h-4 w-4" />
+              <button
+                onClick={() => onVote(story.id, -1)}
+                disabled={isVoting}
+                className={`rounded p-0.5 transition-colors ${
+                  userVote === -1 ? "text-destructive" : "text-muted-foreground hover:text-destructive"
+                }`}
+              >
+                <ArrowBigDown className={`h-4 w-4 ${userVote === -1 ? "fill-destructive" : ""}`} />
               </button>
             </div>
             <Link to={`/stories/${story.id}`} className="flex items-center gap-1 transition-colors hover:text-foreground">
@@ -280,35 +296,14 @@ const Stories = () => {
   const { data: votedSet } = useUserVotes(user, storyIds);
 
   const voteMutation = useMutation({
-    mutationFn: async (storyId: string) => {
-      const { data, error } = await supabase.rpc("toggle_story_vote", {
+    mutationFn: async ({ storyId, voteType }: { storyId: string; voteType: number }) => {
+      const { data, error } = await supabase.rpc("vote_story", {
         p_story_id: storyId,
         p_user_id: user!.id,
+        p_vote_type: voteType,
       });
       if (error) throw error;
-      return data as { voted: boolean; count: number };
-    },
-    onMutate: async (storyId) => {
-      // Optimistic update
-      await queryClient.cancelQueries({ queryKey: ["stories"] });
-      const prev = queryClient.getQueryData<StoryWithCollege[]>(["stories", sort, activeCategory]);
-      if (prev) {
-        const wasVoted = votedSet?.has(storyId);
-        queryClient.setQueryData(
-          ["stories", sort, activeCategory],
-          prev.map((s) =>
-            s.id === storyId
-              ? { ...s, upvote_count: s.upvote_count + (wasVoted ? -1 : 1) }
-              : s
-          )
-        );
-      }
-      return { prev };
-    },
-    onError: (_err, _storyId, context) => {
-      if (context?.prev) {
-        queryClient.setQueryData(["stories", sort, activeCategory], context.prev);
-      }
+      return data as { vote: number; upvotes: number; downvotes: number };
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["stories"] });
@@ -316,12 +311,12 @@ const Stories = () => {
     },
   });
 
-  const handleVote = (storyId: string) => {
+  const handleVote = (storyId: string, voteType: number) => {
     if (!user) {
       navigate("/auth");
       return;
     }
-    voteMutation.mutate(storyId);
+    voteMutation.mutate({ storyId, voteType });
   };
 
   const sortOptions: { key: SortMode; label: string; icon: typeof Flame }[] = [
@@ -424,7 +419,7 @@ const Stories = () => {
                 key={story.id}
                 story={story}
                 index={i}
-                hasVoted={votedSet?.has(story.id) ?? false}
+                userVote={votedSet?.get(story.id) ?? 0}
                 onVote={handleVote}
                 isVoting={voteMutation.isPending}
               />

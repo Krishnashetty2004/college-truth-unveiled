@@ -258,16 +258,17 @@ const StoryDetail = () => {
     enabled: !!id && !!story?.user_id,
   });
 
-  const { data: hasVoted } = useQuery({
+  // Get user's vote type: 1 = upvoted, -1 = downvoted, 0 = no vote
+  const { data: userVote } = useQuery({
     queryKey: ["user-vote", user?.id, id],
     queryFn: async () => {
       const { data } = await supabase
         .from("helpful_votes")
-        .select("id")
+        .select("vote_type")
         .eq("user_id", user!.id)
         .eq("story_id", id!)
         .maybeSingle();
-      return !!data;
+      return (data?.vote_type as number) || 0;
     },
     enabled: !!user && !!id,
   });
@@ -317,13 +318,14 @@ const StoryDetail = () => {
   });
 
   const voteMutation = useMutation({
-    mutationFn: async () => {
-      const { data, error } = await supabase.rpc("toggle_story_vote", {
+    mutationFn: async (voteType: number) => {
+      const { data, error } = await supabase.rpc("vote_story", {
         p_story_id: id!,
         p_user_id: user!.id,
+        p_vote_type: voteType,
       });
       if (error) throw error;
-      return data as { voted: boolean; count: number };
+      return data as { vote: number; upvotes: number; downvotes: number };
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["story", id] });
@@ -350,15 +352,14 @@ const StoryDetail = () => {
     },
   });
 
-  const handleVote = () => {
+  const handleUpvote = () => {
     if (!user) { navigate("/auth"); return; }
-    voteMutation.mutate();
+    voteMutation.mutate(1); // 1 = upvote
   };
 
-  // Downvote = remove upvote if voted, otherwise no-op (no negative votes in system)
   const handleDownvote = () => {
     if (!user) { navigate("/auth"); return; }
-    if (hasVoted) voteMutation.mutate(); // toggle off
+    voteMutation.mutate(-1); // -1 = downvote
   };
 
   const handleComment = () => {
@@ -429,26 +430,26 @@ const StoryDetail = () => {
         {/* Story */}
         <article className="rounded-xl border border-border bg-card p-6">
           <div className="flex gap-4">
-            {/* Vote column */}
+            {/* Vote column - Reddit style */}
             <div className="flex flex-col items-center gap-0.5 pt-1">
               <button
-                onClick={handleVote}
+                onClick={handleUpvote}
                 disabled={voteMutation.isPending}
-                className={`rounded p-1 transition-colors ${hasVoted ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}
+                className={`rounded p-1 transition-colors ${userVote === 1 ? "text-primary" : "text-muted-foreground hover:text-primary"}`}
                 title="Upvote"
               >
-                <ArrowBigUp className={`h-6 w-6 ${hasVoted ? "fill-primary" : ""}`} />
+                <ArrowBigUp className={`h-6 w-6 ${userVote === 1 ? "fill-primary" : ""}`} />
               </button>
-              <span className={`text-sm font-bold tabular-nums ${hasVoted ? "text-primary" : ""}`}>
-                {story.upvote_count}
+              <span className={`text-sm font-bold tabular-nums ${userVote === 1 ? "text-primary" : userVote === -1 ? "text-destructive" : ""}`}>
+                {(story.upvote_count || 0) - ((story as any).downvote_count || 0)}
               </span>
               <button
                 onClick={handleDownvote}
                 disabled={voteMutation.isPending}
-                className={`rounded p-1 transition-colors ${hasVoted ? "text-muted-foreground hover:text-destructive" : "text-muted-foreground/30 cursor-default"}`}
-                title={hasVoted ? "Remove upvote" : "Downvote not available"}
+                className={`rounded p-1 transition-colors ${userVote === -1 ? "text-destructive" : "text-muted-foreground hover:text-destructive"}`}
+                title="Downvote"
               >
-                <ArrowBigDown className="h-6 w-6" />
+                <ArrowBigDown className={`h-6 w-6 ${userVote === -1 ? "fill-destructive" : ""}`} />
               </button>
             </div>
 
