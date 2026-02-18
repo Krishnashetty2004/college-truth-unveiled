@@ -28,15 +28,15 @@ const CATEGORY_EMOJI: Record<string, string> = {
 // Category label mapping
 const CATEGORY_LABELS: Record<string, string> = {
   campus_life: "Campus Life",
-  placement_experience: "Placement Horror",
+  placement_experience: "Placement",
   hostel_life: "Hostel Life",
-  ragging: "Ragging Truth",
+  ragging: "Ragging",
   fest_culture: "Fest Culture",
-  faculty_stories: "Professor Tea",
-  admission_journey: "Admission Journey",
-  funny: "Funny AF",
-  horror: "Horror Story",
-  inspirational: "Inspirational",
+  faculty_stories: "Prof Tea",
+  admission_journey: "Admission",
+  funny: "Funny",
+  horror: "Horror",
+  inspirational: "Inspiring",
   confession: "Confession",
   other: "Story",
 };
@@ -68,10 +68,23 @@ export default function ShareStoryCard({
   const categoryLabel = CATEGORY_LABELS[story.category] || "Story";
   const netScore = (story.upvote_count || 0) - (story.downvote_count || 0);
 
-  // Truncate content for preview
-  const truncatedContent = story.content.length > 250
-    ? story.content.slice(0, 250) + "..."
+  // Dynamic truncation based on title length
+  const titleLength = story.title.length;
+  const maxContentLength = titleLength > 60 ? 380 : titleLength > 40 ? 420 : 480;
+
+  const truncatedContent = story.content.length > maxContentLength
+    ? story.content.slice(0, maxContentLength) + "..."
     : story.content;
+
+  // Truncate title if too long
+  const truncatedTitle = story.title.length > 80
+    ? story.title.slice(0, 80) + "..."
+    : story.title;
+
+  // Shorter college name for display
+  const shortCollegeName = collegeName.length > 35
+    ? collegeName.slice(0, 35) + "..."
+    : collegeName;
 
   const handleDownload = async () => {
     if (!cardRef.current) return;
@@ -127,20 +140,20 @@ export default function ShareStoryCard({
                   position: "absolute",
                   top: "-40px",
                   right: "-40px",
-                  width: "120px",
-                  height: "120px",
-                  background: "rgba(59, 71, 92, 0.06)",
+                  width: "100px",
+                  height: "100px",
+                  background: "rgba(59, 71, 92, 0.05)",
                   borderRadius: "50%",
                 }}
               />
               <div
                 style={{
                   position: "absolute",
-                  bottom: "-30px",
-                  left: "-30px",
-                  width: "100px",
-                  height: "100px",
-                  background: "rgba(179, 107, 77, 0.08)",
+                  bottom: "-20px",
+                  left: "-20px",
+                  width: "80px",
+                  height: "80px",
+                  background: "rgba(179, 107, 77, 0.06)",
                   borderRadius: "50%",
                 }}
               />
@@ -152,45 +165,56 @@ export default function ShareStoryCard({
                   height: "100%",
                   display: "flex",
                   flexDirection: "column",
-                  padding: "20px",
+                  padding: "14px",
                 }}
               >
                 {/* Main card */}
                 <div
                   style={{
                     flex: 1,
-                    background: "rgba(255, 255, 255, 0.85)",
+                    background: "rgba(255, 255, 255, 0.9)",
                     borderRadius: "12px",
-                    padding: "20px",
+                    padding: "14px",
                     display: "flex",
                     flexDirection: "column",
-                    border: "1px solid rgba(59, 71, 92, 0.1)",
-                    boxShadow: "0 4px 20px rgba(30, 25, 20, 0.08)",
+                    border: "1px solid rgba(59, 71, 92, 0.08)",
+                    boxShadow: "0 2px 12px rgba(30, 25, 20, 0.06)",
                   }}
                 >
-                  {/* Category badge */}
+                  {/* Header row: emoji + category + college */}
                   <div
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: "8px",
-                      marginBottom: "12px",
+                      justifyContent: "space-between",
+                      marginBottom: "10px",
                     }}
                   >
-                    <span style={{ fontSize: "28px" }}>{emoji}</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <span style={{ fontSize: "20px" }}>{emoji}</span>
+                      <span
+                        style={{
+                          fontSize: "9px",
+                          fontWeight: 600,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.3px",
+                          color: "#3B475C",
+                          background: "rgba(59, 71, 92, 0.08)",
+                          padding: "3px 8px",
+                          borderRadius: "10px",
+                        }}
+                      >
+                        {categoryLabel}
+                      </span>
+                    </div>
                     <span
                       style={{
-                        fontSize: "10px",
-                        fontWeight: 600,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.5px",
-                        color: "#3B475C",
-                        background: "rgba(59, 71, 92, 0.08)",
-                        padding: "4px 10px",
-                        borderRadius: "12px",
+                        fontSize: "9px",
+                        fontWeight: 500,
+                        color: "#6B635A",
                       }}
                     >
-                      {categoryLabel}
+                      📍 {shortCollegeName}
                     </span>
                   </div>
 
@@ -198,69 +222,58 @@ export default function ShareStoryCard({
                   <h2
                     style={{
                       fontFamily: "'DM Serif Display', Georgia, serif",
-                      fontSize: "18px",
+                      fontSize: "15px",
                       fontWeight: 700,
-                      lineHeight: 1.3,
+                      lineHeight: 1.25,
                       color: "#1E1915",
-                      marginBottom: "12px",
+                      marginBottom: "10px",
                     }}
                   >
-                    {story.title}
+                    {truncatedTitle}
                   </h2>
 
-                  {/* Content preview */}
-                  <p
-                    style={{
-                      fontSize: "12px",
-                      lineHeight: 1.6,
-                      color: "#5C5347",
-                      flex: 1,
-                      overflow: "hidden",
-                    }}
-                  >
-                    "{truncatedContent}"
-                  </p>
-
-                  {/* Divider */}
+                  {/* Content - takes all remaining space */}
                   <div
                     style={{
-                      height: "1px",
-                      background: "rgba(59, 71, 92, 0.12)",
-                      margin: "14px 0",
+                      flex: 1,
+                      overflow: "hidden",
+                      position: "relative",
                     }}
-                  />
+                  >
+                    <p
+                      style={{
+                        fontSize: "11px",
+                        lineHeight: 1.55,
+                        color: "#4A443D",
+                        margin: 0,
+                      }}
+                    >
+                      {truncatedContent}
+                    </p>
+                  </div>
 
-                  {/* Footer info - College & Votes */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  {/* Footer row: upvotes + read more hint */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginTop: "10px",
+                      paddingTop: "10px",
+                      borderTop: "1px solid rgba(59, 71, 92, 0.1)",
+                    }}
+                  >
                     <div
                       style={{
                         display: "flex",
                         alignItems: "center",
-                        gap: "8px",
+                        gap: "4px",
                       }}
                     >
-                      <span style={{ fontSize: "14px" }}>📍</span>
+                      <span style={{ fontSize: "12px" }}>🔥</span>
                       <span
                         style={{
-                          fontSize: "12px",
-                          fontWeight: 600,
-                          color: "#3B475C",
-                        }}
-                      >
-                        {collegeName}
-                      </span>
-                    </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                      }}
-                    >
-                      <span style={{ fontSize: "14px" }}>🔥</span>
-                      <span
-                        style={{
-                          fontSize: "12px",
+                          fontSize: "11px",
                           fontWeight: 600,
                           color: "#B36B4D",
                         }}
@@ -268,32 +281,42 @@ export default function ShareStoryCard({
                         {netScore} upvotes
                       </span>
                     </div>
+                    <span
+                      style={{
+                        fontSize: "9px",
+                        color: "#8B8078",
+                        fontStyle: "italic",
+                      }}
+                    >
+                      Read full story →
+                    </span>
                   </div>
                 </div>
 
-                {/* Branding */}
+                {/* Branding - compact */}
                 <div
                   style={{
-                    marginTop: "16px",
+                    marginTop: "10px",
                     textAlign: "center",
                   }}
                 >
                   <p
                     style={{
                       fontFamily: "'DM Serif Display', Georgia, serif",
-                      fontSize: "14px",
+                      fontSize: "13px",
                       fontWeight: 700,
                       color: "#3B475C",
-                      letterSpacing: "0.3px",
+                      letterSpacing: "0.2px",
+                      margin: 0,
                     }}
                   >
                     RateMyCollege
                   </p>
                   <p
                     style={{
-                      fontSize: "10px",
+                      fontSize: "9px",
                       color: "#8B8078",
-                      marginTop: "2px",
+                      marginTop: "1px",
                     }}
                   >
                     Anonymous college stories
