@@ -169,12 +169,12 @@ const StoryDetail = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Realtime subscription for comments and story updates (votes)
+  // Realtime subscription for comments only (votes handled by mutation)
   useEffect(() => {
     if (!id) return;
 
     const channel = supabase
-      .channel(`story-realtime-${id}`)
+      .channel(`story-comments-${id}`)
       .on(
         "postgres_changes",
         {
@@ -186,34 +186,6 @@ const StoryDetail = () => {
         () => {
           // Refetch comments when any change happens
           queryClient.invalidateQueries({ queryKey: ["story-comments", id] });
-          queryClient.invalidateQueries({ queryKey: ["story", id] });
-        }
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "college_stories",
-          filter: `id=eq.${id}`,
-        },
-        () => {
-          // Refetch story when upvote_count changes
-          queryClient.invalidateQueries({ queryKey: ["story", id] });
-        }
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "helpful_votes",
-          filter: `story_id=eq.${id}`,
-        },
-        () => {
-          // Refetch when votes change
-          queryClient.invalidateQueries({ queryKey: ["story", id] });
-          queryClient.invalidateQueries({ queryKey: ["user-vote"] });
         }
       )
       .subscribe();
@@ -327,60 +299,18 @@ const StoryDetail = () => {
       if (error) throw error;
       return data as { vote: number; upvotes: number; downvotes: number };
     },
-    onMutate: async (voteType) => {
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ["story", id] });
-
-      // Snapshot current state
-      const prevStory = queryClient.getQueryData<StoryWithCollege>(["story", id]);
-      const prevVote = queryClient.getQueryData<number>(["user-vote", user?.id, id]);
-
-      const currentVote = userVote ?? 0;
-
-      // Optimistically update story
-      if (prevStory) {
-        let upDelta = 0;
-        let downDelta = 0;
-
-        if (currentVote === voteType) {
-          // Toggling off same vote
-          if (voteType === 1) upDelta = -1;
-          else downDelta = -1;
-        } else if (currentVote === 0) {
-          // New vote
-          if (voteType === 1) upDelta = 1;
-          else downDelta = 1;
-        } else {
-          // Switching vote
-          if (voteType === 1) { upDelta = 1; downDelta = -1; }
-          else { upDelta = -1; downDelta = 1; }
-        }
-
+    onSuccess: (data) => {
+      // Update story with actual server values
+      const currentStory = queryClient.getQueryData<StoryWithCollege>(["story", id]);
+      if (currentStory) {
         queryClient.setQueryData(["story", id], {
-          ...prevStory,
-          upvote_count: Math.max(0, (prevStory.upvote_count || 0) + upDelta),
-          downvote_count: Math.max(0, ((prevStory as any).downvote_count || 0) + downDelta),
+          ...currentStory,
+          upvote_count: data.upvotes,
+          downvote_count: data.downvotes,
         });
       }
-
-      // Optimistically update user vote
-      const newVote = currentVote === voteType ? 0 : voteType;
-      queryClient.setQueryData(["user-vote", user?.id, id], newVote);
-
-      return { prevStory, prevVote };
-    },
-    onError: (_err, _voteType, context) => {
-      // Rollback on error
-      if (context?.prevStory) {
-        queryClient.setQueryData(["story", id], context.prevStory);
-      }
-      if (context?.prevVote !== undefined) {
-        queryClient.setQueryData(["user-vote", user?.id, id], context.prevVote);
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["story", id] });
-      queryClient.invalidateQueries({ queryKey: ["user-vote"] });
+      // Update user vote state
+      queryClient.setQueryData(["user-vote", user?.id, id], data.vote);
     },
   });
 
