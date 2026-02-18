@@ -302,9 +302,10 @@ const WriteReview = () => {
     setRatings((prev) => ({ ...prev, [key]: value }));
   };
 
-  const isValid = vibeTags.length > 0 && Object.keys(ratings).length >= 1;
+  const minChars = 50;
+  const maxChars = 500;
   const charCount = content.length;
-  const maxChars = 280;
+  const isValid = vibeTags.length > 0 && Object.keys(ratings).length >= 1 && charCount >= minChars;
 
   return (
     <div className="min-h-screen bg-background pl-14">
@@ -379,19 +380,19 @@ const WriteReview = () => {
           {/* Tweet-style Review */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-sm font-medium">Spill the tea</h2>
+              <h2 className="text-sm font-medium">Spill the tea <span className="text-muted-foreground font-normal">(min 50 chars)</span></h2>
               <span className={cn(
                 "text-xs",
-                charCount > maxChars ? "text-destructive" : "text-muted-foreground"
+                charCount < minChars ? "text-orange-500" : charCount > maxChars ? "text-destructive" : "text-green-500"
               )}>
-                {charCount}/{maxChars}
+                {charCount}/{minChars} min
               </span>
             </div>
             <Textarea
               value={content}
               onChange={(e) => setContent(e.target.value.slice(0, maxChars))}
-              placeholder="Real talk about this college... 🍵"
-              rows={3}
+              placeholder="Real talk about this college... Be honest, be helpful. What should juniors know? 🍵"
+              rows={4}
               maxLength={maxChars}
               className="resize-none"
             />
