@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, ArrowLeft, Star, ImagePlus, X } from "lucide-react";
@@ -50,6 +51,53 @@ const RATING_CATEGORIES = [
   { key: "rating_food", label: "Food", hint: "Mess & canteen quality" },
   { key: "rating_hostel", label: "Hostel", hint: "Living conditions" },
 ] as const;
+
+// Course/Program options
+const COURSE_OPTIONS = [
+  "B.Tech / B.E.",
+  "M.Tech / M.E.",
+  "BBA",
+  "MBA",
+  "B.Com",
+  "M.Com",
+  "BA",
+  "MA",
+  "B.Sc",
+  "M.Sc",
+  "BCA",
+  "MCA",
+  "MBBS",
+  "MD / MS",
+  "BDS",
+  "LLB",
+  "LLM",
+  "B.Arch",
+  "M.Arch",
+  "B.Pharm",
+  "M.Pharm",
+  "PhD",
+  "Other",
+];
+
+// Department options
+const DEPARTMENT_OPTIONS = [
+  "Computer Science / IT",
+  "Electronics / ECE",
+  "Mechanical",
+  "Civil",
+  "Electrical",
+  "Chemical",
+  "Biotechnology",
+  "Management",
+  "Commerce",
+  "Arts / Humanities",
+  "Science",
+  "Medicine",
+  "Law",
+  "Architecture",
+  "Pharmacy",
+  "Other",
+];
 
 // Star Rating Component
 const StarRating = ({
@@ -108,6 +156,10 @@ const WriteReview = () => {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [reviewerType, setReviewerType] = useState<string>("current_student");
   const [year, setYear] = useState("");
+  const [course, setCourse] = useState("");
+  const [courseOther, setCourseOther] = useState("");
+  const [department, setDepartment] = useState("");
+  const [departmentOther, setDepartmentOther] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -184,6 +236,10 @@ const WriteReview = () => {
       const vibeLabel = vibeLabels.length > 0 ? vibeLabels.slice(0, 2).join(" + ") : "Review";
       const title = `${vibeLabel} - ${content.slice(0, 50)}${content.length > 50 ? '...' : ''}`;
 
+      // Resolve course and department values
+      const finalCourse = course === "Other" ? courseOther : course;
+      const finalDepartment = department === "Other" ? departmentOther : department;
+
       const { data, error } = await supabase
         .from("reviews")
         .insert({
@@ -193,6 +249,8 @@ const WriteReview = () => {
           content,
           reviewer_type: reviewerType as any,
           admission_year: year ? parseInt(year) : null,
+          course: finalCourse || null,
+          department: finalDepartment || null,
           overall_rating: overallRating,
           vibe_tag: vibeTags.length > 0 ? vibeTags[0] : null, // Primary vibe for backwards compat
           quick_tags: [...selectedTags, ...vibeTags.slice(1)].length > 0 ? [...selectedTags, ...vibeTags.slice(1)] : null,
@@ -362,33 +420,89 @@ const WriteReview = () => {
           </div>
 
           {/* Simplified Metadata */}
-          <div className="flex gap-3">
-            <div className="flex-1">
-              <Select value={reviewerType} onValueChange={setReviewerType}>
-                <SelectTrigger className="text-xs">
-                  <SelectValue placeholder="I am a..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="current_student">Student</SelectItem>
-                  <SelectItem value="alumni">Alumni</SelectItem>
-                  <SelectItem value="faculty">Faculty</SelectItem>
-                  <SelectItem value="parent">Parent</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
+          <div className="space-y-3">
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <Select value={reviewerType} onValueChange={setReviewerType}>
+                  <SelectTrigger className="text-xs">
+                    <SelectValue placeholder="I am a..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="current_student">Student</SelectItem>
+                    <SelectItem value="alumni">Alumni</SelectItem>
+                    <SelectItem value="faculty">Faculty</SelectItem>
+                    <SelectItem value="parent">Parent</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex-1">
+                <Select value={year} onValueChange={setYear}>
+                  <SelectTrigger className="text-xs">
+                    <SelectValue placeholder="Year" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018].map((y) => (
+                      <SelectItem key={y} value={y.toString()}>{y}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div className="flex-1">
-              <Select value={year} onValueChange={setYear}>
-                <SelectTrigger className="text-xs">
-                  <SelectValue placeholder="Year" />
-                </SelectTrigger>
-                <SelectContent>
-                  {[2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018].map((y) => (
-                    <SelectItem key={y} value={y.toString()}>{y}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+
+            {/* Course & Department */}
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <Select value={course} onValueChange={(v) => { setCourse(v); if (v !== "Other") setCourseOther(""); }}>
+                  <SelectTrigger className="text-xs">
+                    <SelectValue placeholder="Course / Program" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COURSE_OPTIONS.map((c) => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex-1">
+                <Select value={department} onValueChange={(v) => { setDepartment(v); if (v !== "Other") setDepartmentOther(""); }}>
+                  <SelectTrigger className="text-xs">
+                    <SelectValue placeholder="Department" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DEPARTMENT_OPTIONS.map((d) => (
+                      <SelectItem key={d} value={d}>{d}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
+
+            {/* Other inputs for Course/Department */}
+            {(course === "Other" || department === "Other") && (
+              <div className="flex gap-3">
+                {course === "Other" && (
+                  <div className="flex-1">
+                    <Input
+                      value={courseOther}
+                      onChange={(e) => setCourseOther(e.target.value)}
+                      placeholder="Enter your course..."
+                      className="text-xs"
+                    />
+                  </div>
+                )}
+                {department === "Other" && (
+                  <div className="flex-1">
+                    <Input
+                      value={departmentOther}
+                      onChange={(e) => setDepartmentOther(e.target.value)}
+                      placeholder="Enter your department..."
+                      className="text-xs"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Single Photo Upload */}
