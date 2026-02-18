@@ -37,16 +37,26 @@ type CommentWithAlias = Tables<"story_comments"> & {
   replies?: CommentWithAlias[];
 };
 
-function timeAgo(dateStr: string) {
-  // Parse as UTC and compare to now (UTC)
-  const date = new Date(dateStr.endsWith("Z") ? dateStr : dateStr + "Z");
-  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (seconds < 5) return "just now";
-  if (seconds < 60) return `${seconds}s ago`;
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
-  return `${Math.floor(seconds / 604800)}w ago`;
+function timeAgo(dateStr: string | null | undefined) {
+  if (!dateStr) return "just now";
+
+  try {
+    // Parse ISO 8601 date string (handles both Z and +00:00 formats)
+    const date = new Date(dateStr);
+    const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+
+    // Handle invalid dates
+    if (isNaN(seconds) || seconds < 0) return "just now";
+
+    if (seconds < 5) return "just now";
+    if (seconds < 60) return `${seconds}s ago`;
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+    if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+    return `${Math.floor(seconds / 604800)}w ago`;
+  } catch {
+    return "just now";
+  }
 }
 
 function CommentItem({
@@ -158,6 +168,33 @@ const StoryDetail = () => {
     supabase.auth.getSession().then(({ data: { session } }) => setUser(session?.user ?? null));
     return () => subscription.unsubscribe();
   }, []);
+
+  // Realtime subscription for comments
+  useEffect(() => {
+    if (!id) return;
+
+    const channel = supabase
+      .channel(`story-comments-${id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "story_comments",
+          filter: `story_id=eq.${id}`,
+        },
+        () => {
+          // Refetch comments when any change happens
+          queryClient.invalidateQueries({ queryKey: ["story-comments", id] });
+          queryClient.invalidateQueries({ queryKey: ["story", id] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [id, queryClient]);
 
   const { data: story, isLoading: storyLoading } = useQuery({
     queryKey: ["story", id],
