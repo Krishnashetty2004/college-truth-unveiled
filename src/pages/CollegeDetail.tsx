@@ -1,7 +1,9 @@
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
+import type { User } from "@supabase/supabase-js";
 import Navbar from "@/components/Navbar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,7 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import {
   MapPin, Calendar, Users, Globe, ArrowLeft, Star,
   GraduationCap, MessageSquare, TrendingUp, AlertCircle,
-  BookOpen, ArrowBigUp, ChevronRight, UserCheck,
+  BookOpen, ArrowBigUp, ChevronRight, UserCheck, LogIn,
 } from "lucide-react";
 
 type College = Tables<"colleges">;
@@ -130,6 +132,37 @@ function ReviewCard({ review }: { review: Review }) {
 
 const CollegeDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const [user, setUser] = useState<User | null>(null);
+
+  // Auth listener
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Fetch user profile to check if this is their college
+  const { data: userProfile } = useQuery({
+    queryKey: ["user-profile-college", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("college_id")
+        .eq("user_id", user!.id)
+        .single();
+      if (error && error.code !== "PGRST116") throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  // Check if user can review this college
+  const isUserCollege = userProfile?.college_id === id;
+  const hasCompleteProfile = !!userProfile?.college_id;
 
   const { data: college, isLoading, isError } = useQuery({
     queryKey: ["college", id],
@@ -380,9 +413,29 @@ const CollegeDetail = () => {
                   <MessageSquare className="h-5 w-5 text-primary" />
                   Reviews ({college.total_reviews})
                 </h2>
-                <Link to={`/colleges/${id}/review`}>
-                  <Button size="sm">Write a Review</Button>
-                </Link>
+                {user ? (
+                  hasCompleteProfile ? (
+                    isUserCollege ? (
+                      <Link to={`/colleges/${id}/review`}>
+                        <Button size="sm">Write a Review</Button>
+                      </Link>
+                    ) : (
+                      <Link to={`/colleges/${userProfile?.college_id}`}>
+                        <Button size="sm" variant="outline">Go to Your College</Button>
+                      </Link>
+                    )
+                  ) : (
+                    <Link to="/profile">
+                      <Button size="sm" variant="outline">Complete Profile</Button>
+                    </Link>
+                  )
+                ) : (
+                  <Link to="/auth">
+                    <Button size="sm" variant="outline" className="gap-1">
+                      <LogIn className="h-3 w-3" /> Sign In
+                    </Button>
+                  </Link>
+                )}
               </div>
 
               {reviews && reviews.length > 0 ? (
@@ -399,9 +452,23 @@ const CollegeDetail = () => {
                     <p className="text-xs text-muted-foreground">
                       Be the first to share your experience at {college.short_name || college.name}!
                     </p>
-                    <Link to={`/colleges/${id}/review`}>
-                      <Button size="sm" variant="outline">Write a Review</Button>
-                    </Link>
+                    {user && hasCompleteProfile && isUserCollege && (
+                      <Link to={`/colleges/${id}/review`}>
+                        <Button size="sm" variant="outline">Write a Review</Button>
+                      </Link>
+                    )}
+                    {user && !hasCompleteProfile && (
+                      <Link to="/profile">
+                        <Button size="sm" variant="outline">Complete Profile to Review</Button>
+                      </Link>
+                    )}
+                    {!user && (
+                      <Link to="/auth">
+                        <Button size="sm" variant="outline" className="gap-1">
+                          <LogIn className="h-3 w-3" /> Sign In to Review
+                        </Button>
+                      </Link>
+                    )}
                   </CardContent>
                 </Card>
               )}
@@ -564,11 +631,43 @@ const CollegeDetail = () => {
               </CardContent>
             </Card>
 
-            <Link to={`/colleges/${id}/review`} className="block">
-              <Button className="w-full bg-gradient-primary hover:opacity-90">
-                Write a Review
-              </Button>
-            </Link>
+            {user ? (
+              hasCompleteProfile && isUserCollege ? (
+                <Link to={`/colleges/${id}/review`} className="block">
+                  <Button className="w-full bg-gradient-primary hover:opacity-90">
+                    Write a Review
+                  </Button>
+                </Link>
+              ) : hasCompleteProfile ? (
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground text-center">
+                    You can only review your own college
+                  </p>
+                  <Link to={`/colleges/${userProfile?.college_id}`} className="block">
+                    <Button className="w-full" variant="outline">
+                      Go to Your College
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground text-center">
+                    Complete your profile to write reviews
+                  </p>
+                  <Link to="/profile" className="block">
+                    <Button className="w-full" variant="outline">
+                      Complete Profile
+                    </Button>
+                  </Link>
+                </div>
+              )
+            ) : (
+              <Link to="/auth" className="block">
+                <Button className="w-full gap-1" variant="outline">
+                  <LogIn className="h-4 w-4" /> Sign In to Review
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </main>

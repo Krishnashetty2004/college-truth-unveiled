@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, ArrowLeft, Star, ImagePlus, X } from "lucide-react";
+import { Loader2, ArrowLeft, Star, ImagePlus, X, AlertCircle, GraduationCap } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import type { User } from "@supabase/supabase-js";
 import { cn } from "@/lib/utils";
@@ -225,6 +225,34 @@ const WriteReview = () => {
     enabled: !!collegeId,
   });
 
+  // Fetch user's profile to check completion and college_id
+  const { data: profile, isLoading: profileLoading } = useQuery({
+    queryKey: ["user-profile", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("college_id, course, department, admission_year")
+        .eq("user_id", user!.id)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  // Profile validation
+  const isProfileComplete = !!profile?.college_id;
+  const isOwnCollege = profile?.college_id === collegeId;
+
+  // Auto-fill form data from profile
+  useEffect(() => {
+    if (profile) {
+      if (profile.course && !course) setCourse(profile.course);
+      if (profile.department && !department) setDepartment(profile.department);
+      if (profile.admission_year && !year) setYear(profile.admission_year.toString());
+    }
+  }, [profile]);
+
   const mutation = useMutation({
     mutationFn: async () => {
       const overallRating = Object.values(ratings).length > 0
@@ -306,6 +334,71 @@ const WriteReview = () => {
   const maxChars = 500;
   const charCount = content.length;
   const isValid = vibeTags.length > 0 && Object.keys(ratings).length >= 1 && charCount >= minChars;
+
+  // Loading state while fetching profile
+  if (profileLoading) {
+    return (
+      <div className="min-h-screen bg-background pl-14">
+        <Navbar />
+        <div className="container mx-auto flex max-w-lg flex-col items-center gap-4 px-4 py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Profile incomplete - redirect to profile page
+  if (!isProfileComplete) {
+    return (
+      <div className="min-h-screen bg-background pl-14">
+        <Navbar />
+        <div className="container mx-auto flex max-w-lg flex-col items-center gap-4 px-4 py-20 text-center">
+          <AlertCircle className="h-12 w-12 text-orange-500" />
+          <h1 className="font-display text-xl font-bold">Complete Your Profile First</h1>
+          <p className="text-sm text-muted-foreground">
+            You need to set your college in your profile before you can write reviews.
+          </p>
+          <Link to="/profile">
+            <Button className="gap-2">
+              <GraduationCap className="h-4 w-4" />
+              Complete Profile
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Wrong college - show error with link to their college
+  if (!isOwnCollege) {
+    return (
+      <div className="min-h-screen bg-background pl-14">
+        <Navbar />
+        <div className="container mx-auto flex max-w-lg flex-col items-center gap-4 px-4 py-20 text-center">
+          <AlertCircle className="h-12 w-12 text-destructive" />
+          <h1 className="font-display text-xl font-bold">You Can Only Review Your Own College</h1>
+          <p className="text-sm text-muted-foreground">
+            You can only write reviews for the college listed in your profile.
+          </p>
+          <div className="flex gap-3">
+            <Link to={`/colleges/${profile?.college_id}/review`}>
+              <Button className="gap-2">
+                <Star className="h-4 w-4" />
+                Review Your College
+              </Button>
+            </Link>
+            <Link to="/profile">
+              <Button variant="outline" className="gap-2">
+                <GraduationCap className="h-4 w-4" />
+                Update Profile
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pl-14">
