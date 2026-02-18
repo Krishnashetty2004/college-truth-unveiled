@@ -62,13 +62,25 @@ function RatingBar({ label, value }: { label: string; value: number | null }) {
   );
 }
 
+const FAKE_USER_ID = "00000000-0000-0000-0000-000000000000";
+
 function ReviewCard({ review }: { review: Review }) {
+  const isVerified = review.user_id !== FAKE_USER_ID;
+
   return (
-    <Card>
+    <Card className={isVerified ? "border-primary/30 bg-primary/5" : ""}>
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1">
-            <h4 className="font-display font-semibold">{review.title}</h4>
+            <div className="flex items-center gap-2">
+              <h4 className="font-display font-semibold">{review.title}</h4>
+              {isVerified && (
+                <Badge className="bg-emerald-500 text-white text-[10px] px-1.5 py-0 h-5 gap-1">
+                  <UserCheck className="h-3 w-3" />
+                  Verified
+                </Badge>
+              )}
+            </div>
             <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
               <Badge variant="secondary" className="capitalize text-xs">
                 {review.reviewer_type.replace("_", " ")}
@@ -141,10 +153,23 @@ const CollegeDetail = () => {
         .select("*")
         .eq("college_id", id!)
         .eq("status", "published")
+        .order("helpful_count", { ascending: false })
         .order("created_at", { ascending: false })
-        .limit(20);
+        .limit(50);
       if (error) throw error;
-      return data as Review[];
+
+      // Sort: real user reviews first, then by helpful_count, then by date
+      const sorted = (data as Review[]).sort((a, b) => {
+        const aIsReal = a.user_id !== FAKE_USER_ID ? 1 : 0;
+        const bIsReal = b.user_id !== FAKE_USER_ID ? 1 : 0;
+        if (aIsReal !== bIsReal) return bIsReal - aIsReal; // Real reviews first
+        if ((b.helpful_count || 0) !== (a.helpful_count || 0)) {
+          return (b.helpful_count || 0) - (a.helpful_count || 0); // Higher helpful first
+        }
+        return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime(); // Newer first
+      });
+
+      return sorted.slice(0, 20); // Return top 20
     },
     enabled: !!id,
   });
