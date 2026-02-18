@@ -43,7 +43,7 @@ function useStories(sort: SortMode, category?: string) {
     queryFn: async () => {
       let query = (supabase as any)
         .from("college_stories")
-        .select("*, thumbnail_url, downvote_count, colleges(id, name, short_name)")
+        .select("*, colleges(id, name, short_name)")
         .eq("status", "published");
 
       if (category) {
