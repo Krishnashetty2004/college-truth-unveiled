@@ -19,7 +19,14 @@ import Profile from "./pages/Profile";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60, // 1 minute - don't refetch immediately
+      refetchOnWindowFocus: false, // Don't refetch when tab regains focus
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

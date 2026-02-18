@@ -200,7 +200,7 @@ const StoryDetail = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("college_stories")
-        .select("*, colleges(id, name, short_name)")
+        .select("*, downvote_count, colleges(id, name, short_name)")
         .eq("id", id!)
         .single();
       if (error) throw error;
