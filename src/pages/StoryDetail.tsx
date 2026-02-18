@@ -169,12 +169,12 @@ const StoryDetail = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Realtime subscription for comments
+  // Realtime subscription for comments and story updates (votes)
   useEffect(() => {
     if (!id) return;
 
     const channel = supabase
-      .channel(`story-comments-${id}`)
+      .channel(`story-realtime-${id}`)
       .on(
         "postgres_changes",
         {
@@ -187,6 +187,33 @@ const StoryDetail = () => {
           // Refetch comments when any change happens
           queryClient.invalidateQueries({ queryKey: ["story-comments", id] });
           queryClient.invalidateQueries({ queryKey: ["story", id] });
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "college_stories",
+          filter: `id=eq.${id}`,
+        },
+        () => {
+          // Refetch story when upvote_count changes
+          queryClient.invalidateQueries({ queryKey: ["story", id] });
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "helpful_votes",
+          filter: `story_id=eq.${id}`,
+        },
+        () => {
+          // Refetch when votes change
+          queryClient.invalidateQueries({ queryKey: ["story", id] });
+          queryClient.invalidateQueries({ queryKey: ["user-vote"] });
         }
       )
       .subscribe();

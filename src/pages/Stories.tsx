@@ -253,6 +253,28 @@ const Stories = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Realtime subscription for story updates (votes, new stories)
+  useEffect(() => {
+    const channel = supabase
+      .channel("stories-realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "college_stories",
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["stories"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
   const { data: stories, isLoading, isError } = useStories(sort, activeCategory);
   const storyIds = (stories || []).map((s) => s.id);
   const { data: votedSet } = useUserVotes(user, storyIds);
