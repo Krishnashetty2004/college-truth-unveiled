@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AppLayout from "./components/AppLayout";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Index from "./pages/Index";
 import Colleges from "./pages/Colleges";
 import CollegeDetail from "./pages/CollegeDetail";
@@ -38,21 +39,25 @@ const App = () => (
       <BrowserRouter>
         <AppLayout>
           <Routes>
+            {/* Public routes */}
             <Route path="/" element={<Index />} />
-            <Route path="/colleges" element={<Colleges />} />
-            <Route path="/colleges/:id" element={<CollegeDetail />} />
-            <Route path="/colleges/:collegeId/review" element={<WriteReview />} />
-            <Route path="/professors/:professorId/review" element={<WriteProfReview />} />
-            <Route path="/professors/:id" element={<ProfessorDetail />} />
-            <Route path="/rankings" element={<Rankings />} />
-            <Route path="/compare" element={<Compare />} />
-            <Route path="/opportunities" element={<Opportunities />} />
-            <Route path="/stories" element={<Stories />} />
-            <Route path="/stories/:id" element={<StoryDetail />} />
-            <Route path="/profile" element={<Profile />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
+
+            {/* Protected routes - require Google sign-in */}
+            <Route path="/colleges" element={<ProtectedRoute><Colleges /></ProtectedRoute>} />
+            <Route path="/colleges/:id" element={<ProtectedRoute><CollegeDetail /></ProtectedRoute>} />
+            <Route path="/colleges/:collegeId/review" element={<ProtectedRoute><WriteReview /></ProtectedRoute>} />
+            <Route path="/professors/:professorId/review" element={<ProtectedRoute><WriteProfReview /></ProtectedRoute>} />
+            <Route path="/professors/:id" element={<ProtectedRoute><ProfessorDetail /></ProtectedRoute>} />
+            <Route path="/rankings" element={<ProtectedRoute><Rankings /></ProtectedRoute>} />
+            <Route path="/compare" element={<ProtectedRoute><Compare /></ProtectedRoute>} />
+            <Route path="/opportunities" element={<ProtectedRoute><Opportunities /></ProtectedRoute>} />
+            <Route path="/stories" element={<ProtectedRoute><Stories /></ProtectedRoute>} />
+            <Route path="/stories/:id" element={<ProtectedRoute><StoryDetail /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AppLayout>

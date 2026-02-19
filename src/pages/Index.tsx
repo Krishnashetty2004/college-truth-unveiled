@@ -28,7 +28,7 @@ const features = [
   {
     icon: Shield,
     title: "Anonymous & Safe",
-    desc: "Google sign-in, anonymous alias. Your identity is never exposed.",
+    desc: "Sign in with Google to access everything. Anonymous alias protects your identity.",
   },
   {
     icon: Eye,
@@ -41,9 +41,9 @@ const features = [
     desc: "AI detects fake reviews, generates trust-weighted scores.",
   },
   {
-    icon: Users,
-    title: "Student-First. Always.",
-    desc: "We never take money from colleges. Our loyalty is to students.",
+    icon: Briefcase,
+    title: "Jobs & Internships",
+    desc: "2,700+ opportunities for freshers. Direct apply links, no middlemen.",
   },
 ];
 
@@ -65,25 +65,34 @@ const Index = () => {
             custom={0}
             className="font-display text-3xl leading-snug tracking-tight md:text-4xl lg:text-[2.75rem]"
           >
-            RateMyCollege is India's first anonymous, proof-based college review platform.
+            India's first anonymous college review platform — plus 2,700+ jobs & internships for freshers.
           </motion.h1>
+          <motion.p
+            initial="hidden"
+            animate="visible"
+            variants={fadeUp}
+            custom={0.5}
+            className="mt-4 text-sm text-muted-foreground"
+          >
+            Proof-based reviews. Direct apply links. Built for college students.
+          </motion.p>
 
           <motion.div
             initial="hidden"
             animate="visible"
             variants={fadeUp}
             custom={1}
-            className="mt-10"
+            className="mt-10 flex flex-col items-center gap-3"
           >
-            <Link to="/colleges">
+            <Link to="/auth">
               <Button
-                variant="outline"
-                className="group gap-3 rounded-lg border-border bg-card px-6 py-3 text-sm font-medium shadow-card transition-all hover:shadow-elevated"
+                className="group gap-3 rounded-lg bg-foreground px-6 py-3 text-sm font-medium text-background shadow-card transition-all hover:bg-foreground/90"
               >
-                Explore Colleges
+                Sign in with Google
                 <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Button>
             </Link>
+            <span className="text-xs text-muted-foreground">Free access to all features</span>
           </motion.div>
         </div>
       </section>
@@ -227,12 +236,11 @@ const Index = () => {
             Every honest review helps the next batch of students make better choices.
           </p>
           <div className="mt-8">
-            <Link to="/colleges">
+            <Link to="/auth">
               <Button
-                variant="outline"
-                className="group gap-3 rounded-lg border-border bg-card px-6 py-3 text-sm font-medium shadow-card transition-all hover:shadow-elevated"
+                className="group gap-3 rounded-lg bg-foreground px-6 py-3 text-sm font-medium text-background shadow-card transition-all hover:bg-foreground/90"
               >
-                Write a Review — It's Anonymous
+                Get Started — Sign in with Google
                 <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Button>
             </Link>
@@ -247,7 +255,7 @@ const Index = () => {
             <div>
               <span className="font-display text-lg">RateMyCollege</span>
               <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
-                India's first anonymous, AI-verified college review platform.
+                Anonymous reviews + jobs for freshers. Sign in with Google to access.
               </p>
             </div>
             <div>

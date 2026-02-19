@@ -1,14 +1,17 @@
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import logoImg from "@/assets/logo.jpeg";
 
 const Auth = () => {
+  const location = useLocation();
+  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || "/colleges";
+
   const handleGoogleSignIn = async () => {
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/`,
+        redirectTo: `${window.location.origin}${from}`,
       },
     });
   };
