@@ -1,8 +1,7 @@
-import { ChevronRight, Shield, Eye, TrendingUp, Users, Search, GraduationCap, MessageSquare, BarChart3 } from "lucide-react";
+import { ChevronRight, Shield, Eye, TrendingUp, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import Navbar from "@/components/Navbar";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -55,9 +54,7 @@ const cities = [
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background pl-14">
-      <Navbar />
-
+    <>
       {/* Hero — Terrain-inspired centered minimal */}
       <section className="flex min-h-screen flex-col items-center justify-center px-4">
         <div className="max-w-[600px] text-center">
@@ -248,7 +245,7 @@ const Index = () => {
           </div>
         </div>
       </footer>
-    </div>
+    </>
   );
 };
 

@@ -2,7 +2,6 @@ import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
-import Navbar from "@/components/Navbar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -119,15 +118,12 @@ const ProfessorDetail = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background pl-14">
-        <Navbar />
-        <div className="container mx-auto max-w-4xl px-4 py-8 space-y-6">
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-5 w-48" />
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Skeleton className="h-56" />
-            <Skeleton className="h-56" />
-          </div>
+      <div className="container mx-auto max-w-4xl px-4 py-8 space-y-6">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-5 w-48" />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Skeleton className="h-56" />
+          <Skeleton className="h-56" />
         </div>
       </div>
     );
@@ -135,13 +131,10 @@ const ProfessorDetail = () => {
 
   if (isError || !professor) {
     return (
-      <div className="min-h-screen bg-background pl-14">
-        <Navbar />
-        <div className="container mx-auto flex max-w-4xl flex-col items-center gap-4 px-4 py-20 text-center">
-          <AlertCircle className="h-12 w-12 text-destructive" />
-          <p className="text-lg font-medium">Professor not found</p>
-          <Button variant="outline" onClick={() => history.back()}>Go Back</Button>
-        </div>
+      <div className="container mx-auto flex max-w-4xl flex-col items-center gap-4 px-4 py-20 text-center">
+        <AlertCircle className="h-12 w-12 text-destructive" />
+        <p className="text-lg font-medium">Professor not found</p>
+        <Button variant="outline" onClick={() => history.back()}>Go Back</Button>
       </div>
     );
   }
@@ -150,9 +143,7 @@ const ProfessorDetail = () => {
   const wouldTakeAgain = professor.would_take_again_pct ? Number(professor.would_take_again_pct) : null;
 
   return (
-    <div className="min-h-screen bg-background pl-14">
-      <Navbar />
-
+    <>
       <header className="border-b border-border bg-muted/30 px-4 py-8">
         <div className="container mx-auto max-w-4xl">
           {college && (
@@ -373,7 +364,7 @@ const ProfessorDetail = () => {
           </div>
         </div>
       </main>
-    </div>
+    </>
   );
 };
 

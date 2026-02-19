@@ -2,12 +2,10 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Trophy, TrendingUp, ChevronRight, Utensils, Wifi, Building2, GraduationCap, Shield, MapPin, BookOpen, Users, Heart, DollarSign, Headphones } from "lucide-react";
+import { Trophy, TrendingUp, ChevronRight, Utensils, Wifi, Building2, GraduationCap, Shield, MapPin, BookOpen, Heart, DollarSign, Headphones } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
-import Navbar from "@/components/Navbar";
 import { Constants } from "@/integrations/supabase/types";
 import { motion } from "framer-motion";
 
@@ -80,9 +78,7 @@ const Rankings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pl-14">
-      <Navbar />
-
+    <>
       <header className="border-b border-border px-4 py-10">
         <div className="mx-auto max-w-4xl">
           <h1 className="font-display text-3xl">Rankings</h1>
@@ -224,7 +220,7 @@ const Rankings = () => {
           )}
         </div>
       </main>
-    </div>
+    </>
   );
 };
 

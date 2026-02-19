@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
-import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -167,13 +166,10 @@ const Profile = () => {
 
   if (!user || profileLoading) {
     return (
-      <div className="min-h-screen bg-background pl-14">
-        <Navbar />
-        <div className="container mx-auto max-w-3xl px-4 py-8 space-y-4">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-40" />
-          <Skeleton className="h-60" />
-        </div>
+      <div className="container mx-auto max-w-3xl px-4 py-8 space-y-4">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-40" />
+        <Skeleton className="h-60" />
       </div>
     );
   }
@@ -182,9 +178,7 @@ const Profile = () => {
     s === "published" ? "default" : s === "held" ? "destructive" : "secondary";
 
   return (
-    <div className="min-h-screen bg-background pl-14">
-      <Navbar />
-
+    <>
       <header className="border-b border-border bg-muted/30 px-4 py-8">
         <div className="container mx-auto max-w-3xl flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -428,7 +422,7 @@ const Profile = () => {
           )}
         </div>
       </main>
-    </div>
+    </>
   );
 };
 

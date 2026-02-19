@@ -1,11 +1,9 @@
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import Navbar from "@/components/Navbar";
 
 const Terms = () => {
   return (
-    <div className="min-h-screen bg-background pl-14">
-      <Navbar />
+    <>
       <div className="container mx-auto max-w-3xl px-4 py-12">
         <Link
           to="/"
@@ -102,7 +100,7 @@ const Terms = () => {
           <Link to="/" className="hover:text-foreground">Home</Link>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

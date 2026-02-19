@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, ArrowLeft, Star, ImagePlus, X, AlertCircle, GraduationCap } from "lucide-react";
-import Navbar from "@/components/Navbar";
 import type { User } from "@supabase/supabase-js";
 import { cn } from "@/lib/utils";
 
@@ -338,12 +337,9 @@ const WriteReview = () => {
   // Loading state while fetching profile
   if (profileLoading) {
     return (
-      <div className="min-h-screen bg-background pl-14">
-        <Navbar />
-        <div className="container mx-auto flex max-w-lg flex-col items-center gap-4 px-4 py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">Loading your profile...</p>
-        </div>
+      <div className="container mx-auto flex max-w-lg flex-col items-center gap-4 px-4 py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <p className="text-sm text-muted-foreground">Loading your profile...</p>
       </div>
     );
   }
@@ -351,21 +347,18 @@ const WriteReview = () => {
   // Profile incomplete - redirect to profile page
   if (!isProfileComplete) {
     return (
-      <div className="min-h-screen bg-background pl-14">
-        <Navbar />
-        <div className="container mx-auto flex max-w-lg flex-col items-center gap-4 px-4 py-20 text-center">
-          <AlertCircle className="h-12 w-12 text-orange-500" />
-          <h1 className="font-display text-xl font-bold">Complete Your Profile First</h1>
-          <p className="text-sm text-muted-foreground">
-            You need to set your college in your profile before you can write reviews.
-          </p>
-          <Link to="/profile">
-            <Button className="gap-2">
-              <GraduationCap className="h-4 w-4" />
-              Complete Profile
-            </Button>
-          </Link>
-        </div>
+      <div className="container mx-auto flex max-w-lg flex-col items-center gap-4 px-4 py-20 text-center">
+        <AlertCircle className="h-12 w-12 text-orange-500" />
+        <h1 className="font-display text-xl font-bold">Complete Your Profile First</h1>
+        <p className="text-sm text-muted-foreground">
+          You need to set your college in your profile before you can write reviews.
+        </p>
+        <Link to="/profile">
+          <Button className="gap-2">
+            <GraduationCap className="h-4 w-4" />
+            Complete Profile
+          </Button>
+        </Link>
       </div>
     );
   }
@@ -373,36 +366,32 @@ const WriteReview = () => {
   // Wrong college - show error with link to their college
   if (!isOwnCollege) {
     return (
-      <div className="min-h-screen bg-background pl-14">
-        <Navbar />
-        <div className="container mx-auto flex max-w-lg flex-col items-center gap-4 px-4 py-20 text-center">
-          <AlertCircle className="h-12 w-12 text-destructive" />
-          <h1 className="font-display text-xl font-bold">You Can Only Review Your Own College</h1>
-          <p className="text-sm text-muted-foreground">
-            You can only write reviews for the college listed in your profile.
-          </p>
-          <div className="flex gap-3">
-            <Link to={`/colleges/${profile?.college_id}/review`}>
-              <Button className="gap-2">
-                <Star className="h-4 w-4" />
-                Review Your College
-              </Button>
-            </Link>
-            <Link to="/profile">
-              <Button variant="outline" className="gap-2">
-                <GraduationCap className="h-4 w-4" />
-                Update Profile
-              </Button>
-            </Link>
-          </div>
+      <div className="container mx-auto flex max-w-lg flex-col items-center gap-4 px-4 py-20 text-center">
+        <AlertCircle className="h-12 w-12 text-destructive" />
+        <h1 className="font-display text-xl font-bold">You Can Only Review Your Own College</h1>
+        <p className="text-sm text-muted-foreground">
+          You can only write reviews for the college listed in your profile.
+        </p>
+        <div className="flex gap-3">
+          <Link to={`/colleges/${profile?.college_id}/review`}>
+            <Button className="gap-2">
+              <Star className="h-4 w-4" />
+              Review Your College
+            </Button>
+          </Link>
+          <Link to="/profile">
+            <Button variant="outline" className="gap-2">
+              <GraduationCap className="h-4 w-4" />
+              Update Profile
+            </Button>
+          </Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background pl-14">
-      <Navbar />
+    <>
       <header className="border-b border-border px-4 py-6">
         <div className="mx-auto max-w-lg">
           <button onClick={() => navigate(-1)} className="mb-3 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
@@ -653,7 +642,7 @@ const WriteReview = () => {
           </p>
         </div>
       </main>
-    </div>
+    </>
   );
 };
 

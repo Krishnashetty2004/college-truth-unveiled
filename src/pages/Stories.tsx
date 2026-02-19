@@ -6,7 +6,6 @@ import { Flame, Clock, TrendingUp, MessageCircle, ArrowBigUp, ArrowBigDown, Aler
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import Navbar from "@/components/Navbar";
 import CreateStoryDialog from "@/components/CreateStoryDialog";
 import { Constants } from "@/integrations/supabase/types";
 import { motion } from "framer-motion";
@@ -326,9 +325,7 @@ const Stories = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background pl-14">
-      <Navbar />
-
+    <>
       <header className="border-b border-border px-4 py-10">
         <div className="mx-auto max-w-3xl flex items-start justify-between">
           <div>
@@ -437,7 +434,7 @@ const Stories = () => {
           )}
         </div>
       </main>
-    </div>
+    </>
   );
 };
 

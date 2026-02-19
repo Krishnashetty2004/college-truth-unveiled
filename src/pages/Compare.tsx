@@ -4,10 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Search, X, Plus, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import Navbar from "@/components/Navbar";
 import { motion } from "framer-motion";
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Legend } from "recharts";
 
@@ -95,9 +91,7 @@ const Compare = () => {
   const collegeNames = colleges?.map((c) => c.short_name || c.name.slice(0, 15)) || [];
 
   return (
-    <div className="min-h-screen bg-background pl-14">
-      <Navbar />
-
+    <>
       <header className="border-b border-border px-4 py-10">
         <div className="mx-auto max-w-4xl">
           <h1 className="font-display text-3xl">Compare</h1>
@@ -288,7 +282,7 @@ const Compare = () => {
           </div>
         )}
       </main>
-    </div>
+    </>
   );
 };
 

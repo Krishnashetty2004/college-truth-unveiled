@@ -10,7 +10,6 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, ArrowLeft, Star } from "lucide-react";
-import Navbar from "@/components/Navbar";
 import { Constants } from "@/integrations/supabase/types";
 import type { User } from "@supabase/supabase-js";
 
@@ -121,8 +120,7 @@ const WriteProfReview = () => {
   const allRated = Object.values(ratings).every((v) => v > 0);
 
   return (
-    <div className="min-h-screen bg-background pl-14">
-      <Navbar />
+    <>
       <header className="border-b border-border px-4 py-8">
         <div className="mx-auto max-w-2xl">
           <button onClick={() => navigate(-1)} className="mb-3 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
@@ -218,7 +216,7 @@ const WriteProfReview = () => {
           <p className="text-sm text-destructive text-center">{(mutation.error as Error).message}</p>
         )}
       </main>
-    </div>
+    </>
   );
 };
 

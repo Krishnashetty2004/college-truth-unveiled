@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import Navbar from "@/components/Navbar";
 import { useColleges, type CollegeFilters, type College } from "@/hooks/useColleges";
 import { Constants } from "@/integrations/supabase/types";
 
@@ -181,9 +180,7 @@ const Colleges = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pl-14">
-      <Navbar />
-
+    <>
       {/* Header */}
       <header className="border-b border-border bg-muted/30 px-4 py-10">
         <div className="container mx-auto max-w-6xl">
@@ -335,7 +332,7 @@ const Colleges = () => {
           </>
         )}
       </main>
-    </div>
+    </>
   );
 };
 

@@ -14,7 +14,13 @@ type SearchResults = {
   professors: { id: string; name: string; department: string | null; college_id: string; rank: number }[];
 };
 
-export default function SearchDialog() {
+interface SearchDialogProps {
+  triggerClassName?: string;
+  triggerLabel?: string;
+  iconOnly?: boolean;
+}
+
+export default function SearchDialog({ triggerClassName, triggerLabel, iconOnly = true }: SearchDialogProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
@@ -44,12 +50,18 @@ export default function SearchDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button className="group relative flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground transition-all duration-200 hover:bg-foreground/5 hover:text-foreground">
-          <SearchIcon className="h-[18px] w-[18px]" strokeWidth={1.5} />
-          <span className="pointer-events-none absolute left-12 whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-xs text-background opacity-0 transition-opacity group-hover:opacity-100">
-            Search
-          </span>
-        </button>
+        {iconOnly ? (
+          <button className="group relative flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground transition-all duration-200 hover:bg-foreground/5 hover:text-foreground">
+            <SearchIcon className="h-[18px] w-[18px]" strokeWidth={1.5} />
+            <span className="pointer-events-none absolute left-12 whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-xs text-background opacity-0 transition-opacity group-hover:opacity-100">
+              Search
+            </span>
+          </button>
+        ) : (
+          <button className={triggerClassName}>
+            {triggerLabel || "Search"}
+          </button>
+        )}
       </DialogTrigger>
       <DialogContent className="max-w-lg p-0 gap-0 overflow-hidden">
         <div className="flex items-center gap-2 border-b border-border px-4 py-3">

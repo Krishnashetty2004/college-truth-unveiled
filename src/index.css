@@ -160,4 +160,22 @@
   .shadow-elevated {
     box-shadow: var(--shadow-elevated);
   }
+
+  /* Mobile safe area utilities */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .mb-safe {
+    margin-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Bottom navigation spacing for content */
+  .pb-bottom-nav {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+  }
 }

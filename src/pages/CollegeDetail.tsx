@@ -4,7 +4,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import type { User } from "@supabase/supabase-js";
-import Navbar from "@/components/Navbar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -338,15 +337,12 @@ const CollegeDetail = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background pl-14">
-        <Navbar />
-        <div className="container mx-auto max-w-5xl px-4 py-8 space-y-6">
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-5 w-48" />
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Skeleton className="h-64" />
-            <Skeleton className="h-64" />
-          </div>
+      <div className="container mx-auto max-w-5xl px-4 py-8 space-y-6">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-5 w-48" />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Skeleton className="h-64" />
+          <Skeleton className="h-64" />
         </div>
       </div>
     );
@@ -354,15 +350,12 @@ const CollegeDetail = () => {
 
   if (isError || !college) {
     return (
-      <div className="min-h-screen bg-background pl-14">
-        <Navbar />
-        <div className="container mx-auto flex max-w-5xl flex-col items-center gap-4 px-4 py-20 text-center">
-          <AlertCircle className="h-12 w-12 text-destructive" />
-          <p className="text-lg font-medium">College not found</p>
-          <Link to="/colleges">
-            <Button variant="outline">Back to Directory</Button>
-          </Link>
-        </div>
+      <div className="container mx-auto flex max-w-5xl flex-col items-center gap-4 px-4 py-20 text-center">
+        <AlertCircle className="h-12 w-12 text-destructive" />
+        <p className="text-lg font-medium">College not found</p>
+        <Link to="/colleges">
+          <Button variant="outline">Back to Directory</Button>
+        </Link>
       </div>
     );
   }
@@ -370,9 +363,7 @@ const CollegeDetail = () => {
   const score = college.ai_overall_score ? Number(college.ai_overall_score) : null;
 
   return (
-    <div className="min-h-screen bg-background pl-14">
-      <Navbar />
-
+    <>
       {/* Back link + header */}
       <header className="border-b border-border bg-muted/30 px-4 py-8">
         <div className="container mx-auto max-w-5xl">
@@ -777,7 +768,7 @@ const CollegeDetail = () => {
           </div>
         </div>
       </main>
-    </div>
+    </>
   );
 };
 
