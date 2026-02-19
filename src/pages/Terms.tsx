@@ -13,7 +13,7 @@ const Terms = () => {
         </Link>
 
         <h1 className="font-display text-3xl font-bold">Terms of Service</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Last updated: January 2025</p>
+        <p className="mt-2 text-sm text-muted-foreground">Last updated: February 19, 2026</p>
 
         <div className="mt-8 space-y-8 text-sm leading-relaxed text-foreground/80">
           <section className="space-y-3">

@@ -1,4 +1,4 @@
-import { ChevronRight, Shield, Eye, TrendingUp, Users } from "lucide-react";
+import { ChevronRight, Shield, Eye, TrendingUp, Users, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -159,6 +159,40 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Opportunities */}
+      <section className="border-t border-border px-4 py-20">
+        <div className="mx-auto max-w-3xl text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <div className="mb-4 flex justify-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border bg-card">
+                <Briefcase className="h-5 w-5 text-foreground" strokeWidth={1.5} />
+              </div>
+            </div>
+            <h2 className="font-display text-2xl md:text-3xl">
+              Jobs & Internships
+            </h2>
+            <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">
+              2,700+ curated opportunities from top companies. No middlemen, no hidden fees — just direct apply links.
+            </p>
+            <div className="mt-8">
+              <Link to="/opportunities">
+                <Button
+                  variant="outline"
+                  className="group gap-3 rounded-lg border-border bg-card px-6 py-3 text-sm font-medium shadow-card transition-all hover:shadow-elevated"
+                >
+                  Browse Opportunities
+                  <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                </Button>
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Cities */}
       <section className="border-t border-border px-4 py-20">
         <div className="mx-auto max-w-3xl text-center">
@@ -223,6 +257,7 @@ const Index = () => {
                 <li><Link to="/rankings" className="text-foreground/70 hover:text-foreground transition-colors">Rankings</Link></li>
                 <li><Link to="/compare" className="text-foreground/70 hover:text-foreground transition-colors">Compare</Link></li>
                 <li><Link to="/stories" className="text-foreground/70 hover:text-foreground transition-colors">Stories</Link></li>
+                <li><Link to="/opportunities" className="text-foreground/70 hover:text-foreground transition-colors">Opportunities</Link></li>
               </ul>
             </div>
             <div>
@@ -240,8 +275,21 @@ const Index = () => {
               </ul>
             </div>
           </div>
-          <div className="mt-10 border-t border-border pt-6 text-center text-xs text-muted-foreground">
-            © {new Date().getFullYear()} RateMyCollege. We never take money from colleges.
+          <div className="mt-10 border-t border-border pt-6 text-center">
+            <p className="text-sm font-medium text-foreground/80 italic">
+              "We don't take money from colleges. Our loyalty is to students, not institutions."
+            </p>
+            <p className="mt-4 text-xs text-muted-foreground">
+              © {new Date().getFullYear()} RateMyCollege. Built by{" "}
+              <a
+                href="https://www.plutas.in/landing.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-foreground/70 hover:text-foreground transition-colors underline underline-offset-2"
+              >
+                Plutas Labs
+              </a>
+            </p>
           </div>
         </div>
       </footer>
