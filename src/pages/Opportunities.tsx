@@ -49,7 +49,8 @@ const Opportunities = () => {
     roleType: searchParams.get("roleType") || undefined,
     department: searchParams.get("department") || undefined,
     tier: searchParams.get("tier") || undefined,
-    isIndia: searchParams.get("isIndia") === "true" || undefined,
+    isIndia: searchParams.get("isIndia") === "true" ? true : undefined,
+    isRemote: searchParams.get("isRemote") === "true" ? true : undefined,
     sort: (searchParams.get("sort") as OpportunityFilters["sort"]) || "recent",
     page: Number(searchParams.get("page")) || 1,
   }), [debouncedSearch, searchParams]);
@@ -75,6 +76,7 @@ const Opportunities = () => {
     filters.department,
     filters.tier,
     filters.isIndia,
+    filters.isRemote,
   ].filter(Boolean).length;
 
   const clearFilters = () => {
@@ -177,11 +179,23 @@ const Opportunities = () => {
           <div className="flex items-center gap-2">
             <Checkbox
               id="india-only"
-              checked={filters.isIndia ?? false}
-              onCheckedChange={(checked) => setFilter("isIndia", checked === true)}
+              checked={filters.isIndia === true}
+              onCheckedChange={(checked) => setFilter("isIndia", checked === true ? true : null)}
             />
             <Label htmlFor="india-only" className="text-sm cursor-pointer">
               India Only
+            </Label>
+          </div>
+
+          {/* Remote Only checkbox */}
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="remote-only"
+              checked={filters.isRemote === true}
+              onCheckedChange={(checked) => setFilter("isRemote", checked === true ? true : null)}
+            />
+            <Label htmlFor="remote-only" className="text-sm cursor-pointer">
+              Remote
             </Label>
           </div>
 

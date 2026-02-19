@@ -12,6 +12,7 @@ export interface Opportunity {
   funded: string | null;
   source: string | null;
   is_india: boolean;
+  is_remote: boolean;
   is_fresh: boolean;
   posted_ago: string | null;
   updated_at: string | null;
@@ -26,6 +27,7 @@ export interface OpportunityFilters {
   department?: string;
   tier?: string;
   isIndia?: boolean;
+  isRemote?: boolean;
   sort?: "recent" | "company" | "popular";
   page?: number;
 }
@@ -65,8 +67,13 @@ async function fetchOpportunities(filters: OpportunityFilters) {
   }
 
   // India only filter
-  if (filters.isIndia) {
+  if (filters.isIndia === true) {
     query = query.eq("is_india", true);
+  }
+
+  // Remote only filter
+  if (filters.isRemote === true) {
+    query = query.eq("is_remote", true);
   }
 
   // Sorting
