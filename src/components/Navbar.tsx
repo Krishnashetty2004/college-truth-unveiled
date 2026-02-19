@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { GraduationCap, BarChart3, GitCompare, BookOpen, LogIn, User } from "lucide-react";
+import { GraduationCap, BarChart3, GitCompare, BookOpen, LogIn, User, Briefcase } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import SearchDialog from "@/components/SearchDialog";
@@ -9,6 +9,7 @@ import logoImg from "@/assets/logo.jpeg";
 
 const baseNavItems = [
   { to: "/colleges", icon: GraduationCap, label: "Colleges" },
+  { to: "/opportunities", icon: Briefcase, label: "Jobs" },
   { to: "/rankings", icon: BarChart3, label: "Rankings" },
   { to: "/compare", icon: GitCompare, label: "Compare" },
   { to: "/stories", icon: BookOpen, label: "Stories" },

@@ -17,6 +17,7 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import ProfessorDetail from "./pages/ProfessorDetail";
 import Profile from "./pages/Profile";
+import Opportunities from "./pages/Opportunities";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 
@@ -45,6 +46,7 @@ const App = () => (
             <Route path="/professors/:id" element={<ProfessorDetail />} />
             <Route path="/rankings" element={<Rankings />} />
             <Route path="/compare" element={<Compare />} />
+            <Route path="/opportunities" element={<Opportunities />} />
             <Route path="/stories" element={<Stories />} />
             <Route path="/stories/:id" element={<StoryDetail />} />
             <Route path="/profile" element={<Profile />} />
