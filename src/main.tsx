@@ -6,8 +6,10 @@ import "./index.css";
 
 const options = {
   api_host: import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
-  defaults: "2026-01-30",
-} as const;
+  capture_pageview: true,
+  capture_pageleave: true,
+  autocapture: true,
+};
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
