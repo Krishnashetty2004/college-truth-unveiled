@@ -162,7 +162,7 @@ export function BrotherhoodGate({ children }: BrotherhoodGateProps) {
         transition={{ delay: 0.6, duration: 0.8 }}
         className="mt-12 text-center"
       >
-        <Link to="/colleges">
+        <Link to="/contribute">
           <Button
             size="lg"
             className="group gap-3 rounded-full bg-foreground px-8 py-6 text-base font-medium text-background shadow-lg transition-all hover:bg-foreground/90 hover:shadow-xl"
@@ -172,7 +172,7 @@ export function BrotherhoodGate({ children }: BrotherhoodGateProps) {
           </Button>
         </Link>
         <p className="mt-4 text-sm text-muted-foreground">
-          Find your college and share your experience
+          Takes 2 minutes. Unlocks everything.
         </p>
       </motion.div>
 

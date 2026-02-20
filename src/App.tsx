@@ -23,6 +23,7 @@ import Opportunities from "./pages/Opportunities";
 import CampusDrives from "./pages/CampusDrives";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
+import Contribute from "./pages/Contribute";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -58,6 +59,7 @@ const App = () => (
               <Route path="/compare" element={<ProtectedRoute><Compare /></ProtectedRoute>} />
               <Route path="/opportunities" element={<ProtectedRoute><Opportunities /></ProtectedRoute>} />
               <Route path="/campus-drives" element={<ProtectedRoute><CampusDrives /></ProtectedRoute>} />
+              <Route path="/contribute" element={<ProtectedRoute><Contribute /></ProtectedRoute>} />
               <Route path="/stories" element={<ProtectedRoute><Stories /></ProtectedRoute>} />
               <Route path="/stories/:id" element={<ProtectedRoute><StoryDetail /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
