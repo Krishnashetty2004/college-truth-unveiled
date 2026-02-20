@@ -24,10 +24,10 @@ const VIBE_OPTIONS = [
   { value: "party_school", emoji: "🎉", label: "Party School" },
   { value: "nerd_paradise", emoji: "📚", label: "Nerd Paradise" },
   { value: "placement_king", emoji: "💼", label: "Placement King" },
-  { value: "run_away", emoji: "🏃", label: "Run Away" },
-  { value: "boring", emoji: "😴", label: "Boring AF" },
-  { value: "circus", emoji: "🤡", label: "Circus" },
+  { value: "beautiful_girls", emoji: "👩", label: "Beautiful Girls" },
+  { value: "beautiful_boys", emoji: "👨", label: "Beautiful Boys" },
   { value: "hidden_gem", emoji: "✨", label: "Hidden Gem" },
+  { value: "boring", emoji: "😴", label: "Boring AF" },
 ] as const;
 
 const MAX_VIBES = 5;
@@ -46,6 +46,10 @@ const RATING_CATEGORIES = [
   { key: "rating_value_for_money", label: "Worth it?", hint: "Value for the fees" },
   { key: "rating_food", label: "Food", hint: "Mess & canteen quality" },
   { key: "rating_hostel", label: "Hostel", hint: "Living conditions" },
+  { key: "rating_wifi", label: "WiFi", hint: "Internet speed & reliability" },
+  { key: "rating_infrastructure", label: "Infrastructure", hint: "Labs, library, classrooms" },
+  { key: "rating_safety", label: "Safety", hint: "Campus security & safety" },
+  { key: "rating_location", label: "Location", hint: "Connectivity & surroundings" },
 ] as const;
 
 // Course options
