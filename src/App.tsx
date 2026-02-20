@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import AppLayout from "./components/AppLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ErrorBoundary from "./components/ErrorBoundary";
+import WhatsAppSupport from "./components/WhatsAppSupport";
 import Index from "./pages/Index";
 import Colleges from "./pages/Colleges";
 import CollegeDetail from "./pages/CollegeDetail";
@@ -35,42 +37,45 @@ const queryClient = new QueryClient({
 });
 
 const App = () => (
-  <HelmetProvider>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AppLayout>
-            <Routes>
-              {/* Public routes */}
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/privacy" element={<Privacy />} />
+  <ErrorBoundary>
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AppLayout>
+              <Routes>
+                {/* Public routes */}
+                <Route path="/" element={<Index />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/privacy" element={<Privacy />} />
 
-              {/* Protected routes - require Google sign-in */}
-              <Route path="/colleges" element={<ProtectedRoute><Colleges /></ProtectedRoute>} />
-              <Route path="/colleges/:id" element={<ProtectedRoute><CollegeDetail /></ProtectedRoute>} />
-              <Route path="/colleges/:collegeId/review" element={<ProtectedRoute><WriteReview /></ProtectedRoute>} />
-              <Route path="/professors/:professorId/review" element={<ProtectedRoute><WriteProfReview /></ProtectedRoute>} />
-              <Route path="/professors/:id" element={<ProtectedRoute><ProfessorDetail /></ProtectedRoute>} />
-              <Route path="/rankings" element={<ProtectedRoute><Rankings /></ProtectedRoute>} />
-              <Route path="/compare" element={<ProtectedRoute><Compare /></ProtectedRoute>} />
-              <Route path="/opportunities" element={<ProtectedRoute><Opportunities /></ProtectedRoute>} />
-              <Route path="/campus-drives" element={<ProtectedRoute><CampusDrives /></ProtectedRoute>} />
-              <Route path="/contribute" element={<ProtectedRoute><Contribute /></ProtectedRoute>} />
-              <Route path="/stories" element={<ProtectedRoute><Stories /></ProtectedRoute>} />
-              <Route path="/stories/:id" element={<ProtectedRoute><StoryDetail /></ProtectedRoute>} />
-              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                {/* Protected routes - require Google sign-in */}
+                <Route path="/colleges" element={<ProtectedRoute><Colleges /></ProtectedRoute>} />
+                <Route path="/colleges/:id" element={<ProtectedRoute><CollegeDetail /></ProtectedRoute>} />
+                <Route path="/colleges/:collegeId/review" element={<ProtectedRoute><WriteReview /></ProtectedRoute>} />
+                <Route path="/professors/:professorId/review" element={<ProtectedRoute><WriteProfReview /></ProtectedRoute>} />
+                <Route path="/professors/:id" element={<ProtectedRoute><ProfessorDetail /></ProtectedRoute>} />
+                <Route path="/rankings" element={<ProtectedRoute><Rankings /></ProtectedRoute>} />
+                <Route path="/compare" element={<ProtectedRoute><Compare /></ProtectedRoute>} />
+                <Route path="/opportunities" element={<ProtectedRoute><Opportunities /></ProtectedRoute>} />
+                <Route path="/campus-drives" element={<ProtectedRoute><CampusDrives /></ProtectedRoute>} />
+                <Route path="/contribute" element={<ProtectedRoute><Contribute /></ProtectedRoute>} />
+                <Route path="/stories" element={<ProtectedRoute><Stories /></ProtectedRoute>} />
+                <Route path="/stories/:id" element={<ProtectedRoute><StoryDetail /></ProtectedRoute>} />
+                <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </AppLayout>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
-  </HelmetProvider>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </AppLayout>
+            <WhatsAppSupport />
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </HelmetProvider>
+  </ErrorBoundary>
 );
 
 export default App;
