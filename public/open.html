@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RateMyCollege - Opening...</title>
+  <link rel="icon" href="/favicon.jpeg" type="image/jpeg">
+  <meta name="robots" content="noindex">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #06060a;
+      color: #fff;
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+      text-align: center;
+    }
+    .container { max-width: 400px; }
+    .logo { font-size: 48px; margin-bottom: 16px; }
+    h1 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    .subtitle { color: #888; font-size: 14px; margin-bottom: 32px; }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid #333;
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 24px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .prompt {
+      display: none;
+      background: #1a1a1f;
+      border: 1px solid #333;
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 24px;
+    }
+    .prompt h2 { font-size: 18px; margin-bottom: 12px; }
+    .prompt p { color: #aaa; font-size: 14px; line-height: 1.6; margin-bottom: 20px; }
+    .prompt .steps {
+      background: #252530;
+      border-radius: 8px;
+      padding: 16px;
+      text-align: left;
+      margin-bottom: 20px;
+    }
+    .prompt .steps li {
+      color: #ccc;
+      font-size: 14px;
+      margin-bottom: 8px;
+      list-style: none;
+    }
+    .prompt .steps li:last-child { margin-bottom: 0; }
+    .prompt .steps li span { color: #f59e0b; font-weight: 600; }
+    .btn {
+      display: inline-block;
+      background: #fff;
+      color: #000;
+      padding: 14px 32px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255,255,255,0.2); }
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid #444;
+      color: #fff;
+      margin-top: 12px;
+    }
+    .footer { margin-top: 40px; color: #555; font-size: 12px; }
+    .footer a { color: #888; text-decoration: none; }
+  </style>
+  <script>
+    (function() {
+      var ua = navigator.userAgent || '';
+      var isInstagram = ua.indexOf('Instagram') > -1;
+      var isFacebook = ua.indexOf('FBAN') > -1 || ua.indexOf('FBAV') > -1;
+      var isInAppBrowser = isInstagram || isFacebook;
+      var isAndroid = /android/i.test(ua);
+      var isIOS = /iPhone|iPad|iPod/.test(ua);
+
+      // Preserve UTM/ref params
+      var params = window.location.search || '';
+      var targetUrl = 'https://ratemycollege.vertexhq.in' + params;
+
+      if (!isInAppBrowser) {
+        // Normal browser - just redirect
+        window.location.href = targetUrl;
+        return;
+      }
+
+      // In-app browser detected
+      window.addEventListener('DOMContentLoaded', function() {
+        var spinner = document.getElementById('spinner');
+        var loadingText = document.getElementById('loading-text');
+        var prompt = document.getElementById('prompt');
+        var tryAnywayBtn = document.getElementById('try-anyway');
+
+        tryAnywayBtn.href = targetUrl;
+
+        if (isAndroid) {
+          // Android: Try Chrome intent
+          loadingText.textContent = 'Redirecting to Chrome...';
+          window.location.href = 'intent://' + targetUrl.replace(/^https?:\/\//, '') +
+            '#Intent;scheme=https;package=com.android.chrome;end';
+
+          // Fallback after 2 seconds if intent didn't work
+          setTimeout(function() {
+            spinner.style.display = 'none';
+            loadingText.textContent = 'Could not open Chrome automatically';
+            prompt.style.display = 'block';
+          }, 2000);
+        } else if (isIOS) {
+          // iOS: No reliable auto-open, show prompt immediately
+          spinner.style.display = 'none';
+          loadingText.textContent = 'One more step...';
+          prompt.style.display = 'block';
+        } else {
+          // Other in-app browser
+          spinner.style.display = 'none';
+          prompt.style.display = 'block';
+        }
+      });
+    })();
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">🎓</div>
+    <h1>RateMyCollege</h1>
+    <p class="subtitle">India's Anonymous College Review Platform</p>
+
+    <div id="spinner" class="spinner"></div>
+    <p id="loading-text" style="color:#888;font-size:14px;">Opening in your browser...</p>
+
+    <div id="prompt" class="prompt">
+      <h2>Almost there! 🙌</h2>
+      <p>Instagram's browser has limited features. Open in your real browser for the full experience:</p>
+
+      <ol class="steps">
+        <li>1. Tap the <span>⋯</span> or <span>⋮</span> menu (top right)</li>
+        <li>2. Select <span>"Open in Browser"</span> or <span>"Open in Safari/Chrome"</span></li>
+      </ol>
+
+      <a id="try-anyway" href="https://ratemycollege.vertexhq.in" class="btn">
+        Try Opening Anyway →
+      </a>
+      <br>
+      <a href="https://ratemycollege.vertexhq.in" class="btn btn-secondary"
+         onclick="navigator.clipboard && navigator.clipboard.writeText('https://ratemycollege.vertexhq.in'); this.textContent='Copied! Paste in browser'; return false;">
+        Copy Link Instead
+      </a>
+    </div>
+
+    <p class="footer">
+      Built by <a href="https://plutas.in/landing.html" target="_blank">Plutas Labs</a>
+    </p>
+  </div>
+</body>
+</html>
