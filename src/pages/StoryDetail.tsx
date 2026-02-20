@@ -254,6 +254,7 @@ const StoryDetail = () => {
         .from("story_comments")
         .select("*")
         .eq("story_id", id!)
+        .order("is_seeded", { ascending: true }) // Real comments first
         .order("created_at", { ascending: true });
       if (error) throw error;
 
