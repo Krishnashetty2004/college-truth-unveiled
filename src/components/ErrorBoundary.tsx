@@ -65,7 +65,7 @@ class ErrorBoundary extends Component<Props, State> {
 
             <p className="text-xs text-muted-foreground">
               Built with care by{" "}
-              <a href="https://plutas.in" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+              <a href="https://plutas.in/landing.html" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
                 Plutas Labs
               </a>
             </p>
