@@ -22,12 +22,11 @@ export function useHasWrittenReview(): ReviewStatus {
           return;
         }
 
-        // Check if user has any published reviews
+        // Check if user has any reviews (any status counts - they contributed)
         const { count, error } = await supabase
           .from("reviews")
           .select("*", { count: "exact", head: true })
-          .eq("user_id", user.id)
-          .eq("status", "published");
+          .eq("user_id", user.id);
 
         if (error) {
           console.error("Error checking review status:", error);

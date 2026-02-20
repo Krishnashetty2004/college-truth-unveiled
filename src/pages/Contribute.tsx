@@ -267,6 +267,7 @@ const Contribute = () => {
           course: finalCourse || null,
           department: finalDepartment || null,
           overall_rating: overallRating,
+          status: "published" as const,
           ...Object.fromEntries(Object.entries(ratings)),
         })
         .select("id")

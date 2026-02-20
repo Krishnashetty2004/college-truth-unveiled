@@ -279,6 +279,7 @@ const WriteReview = () => {
           course: finalCourse || null,
           department: finalDepartment || null,
           overall_rating: overallRating,
+          status: "published" as const,
           vibe_tag: vibeTags.length > 0 ? vibeTags[0] : null, // Primary vibe for backwards compat
           quick_tags: [...selectedTags, ...vibeTags.slice(1)].length > 0 ? [...selectedTags, ...vibeTags.slice(1)] : null,
           ...Object.fromEntries(
