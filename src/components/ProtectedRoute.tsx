@@ -13,17 +13,44 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const location = useLocation();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
+    let isMounted = true;
+
+    // Check if this is an OAuth callback (has code or access_token in URL)
+    const urlParams = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const isOAuthCallback = urlParams.has('code') || hashParams.has('access_token');
+
+    const initAuth = async () => {
+      // If OAuth callback, wait for Supabase to process it first
+      if (isOAuthCallback) {
+        // Small delay to let Supabase process the OAuth tokens
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (isMounted) {
+        setUser(session?.user ?? null);
+        // Only set loading to false if not an OAuth callback or if we got a session
+        if (!isOAuthCallback || session?.user) {
+          setLoading(false);
+        }
+      }
+    };
+
+    initAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (isMounted) {
+        setUser(session?.user ?? null);
+        // Always set loading to false when auth state changes
+        setLoading(false);
+      }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   if (loading) {
