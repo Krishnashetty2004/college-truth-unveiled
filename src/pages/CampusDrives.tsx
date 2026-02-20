@@ -175,7 +175,6 @@ function DriveCard({ drive, index }: { drive: CampusDrive; index: number }) {
 }
 
 const CampusDrives = () => {
-  const [batchFilter, setBatchFilter] = useState<string>("all");
   const [companyFilter, setCompanyFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("open");
   const [typeFilter, setTypeFilter] = useState<string>("all");
@@ -186,16 +185,9 @@ const CampusDrives = () => {
     return Array.from(set).sort();
   }, []);
 
-  // Get unique batches
-  const batches = useMemo(() => {
-    const set = new Set(campusDrivesData.drives.flatMap((d) => d.batch));
-    return Array.from(set).sort().reverse();
-  }, []);
-
   // Filter drives
   const filteredDrives = useMemo(() => {
     return campusDrivesData.drives.filter((drive) => {
-      if (batchFilter !== "all" && !drive.batch.includes(batchFilter)) return false;
       if (companyFilter !== "all" && drive.company !== companyFilter) return false;
       if (statusFilter === "open" && drive.status !== "open") return false;
       if (statusFilter === "closed" && drive.status === "open") return false;
@@ -203,7 +195,7 @@ const CampusDrives = () => {
       if (typeFilter === "non-engineering" && !drive.tags.some(t => ["non-engineering", "arts-commerce", "any-degree", "non-engineering-eligible"].includes(t))) return false;
       return true;
     });
-  }, [batchFilter, companyFilter, statusFilter, typeFilter]);
+  }, [companyFilter, statusFilter, typeFilter]);
 
   // Sort: hot first, then by deadline
   const sortedDrives = useMemo(() => {
@@ -219,14 +211,12 @@ const CampusDrives = () => {
   }, [filteredDrives]);
 
   const activeFilterCount = [
-    batchFilter !== "all",
     companyFilter !== "all",
     statusFilter !== "open",
     typeFilter !== "all",
   ].filter(Boolean).length;
 
   const clearFilters = () => {
-    setBatchFilter("all");
     setCompanyFilter("all");
     setStatusFilter("open");
     setTypeFilter("all");
@@ -258,18 +248,6 @@ const CampusDrives = () => {
       <main className="container mx-auto max-w-6xl px-4 py-6">
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-3 mb-6">
-          <Select value={batchFilter} onValueChange={setBatchFilter}>
-            <SelectTrigger className="w-[120px]">
-              <SelectValue placeholder="Batch" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Batches</SelectItem>
-              {batches.map((b) => (
-                <SelectItem key={b} value={b}>{b} Batch</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
           <Select value={companyFilter} onValueChange={setCompanyFilter}>
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="Company" />
