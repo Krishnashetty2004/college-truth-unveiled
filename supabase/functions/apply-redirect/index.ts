@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
     // Get the apply URL from the opportunities table
     const { data, error } = await supabase
       .from("opportunities")
-      .select("apply_url")
+      .select("apply_url, apply_count")
       .eq("id", opportunityId)
       .eq("is_active", true)
       .single();
@@ -110,10 +110,14 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Increment the apply count using the RPC function (handles atomically)
-    await supabase.rpc("increment_apply_count", { opportunity_id: opportunityId }).catch(err => {
-      console.error("Failed to increment apply count:", err);
-    });
+    // Increment the apply count (fire and forget, don't block redirect)
+    try {
+      await supabase.from("opportunities").update({
+        apply_count: data.apply_count ? data.apply_count + 1 : 1
+      }).eq("id", opportunityId);
+    } catch (e) {
+      console.error("Failed to increment apply count:", e);
+    }
 
     // Redirect to the apply URL
     return new Response(null, {
