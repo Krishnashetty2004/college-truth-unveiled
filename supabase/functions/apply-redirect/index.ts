@@ -4,9 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const ALLOWED_ORIGINS = [
   "http://localhost:5173",
   "http://localhost:3000",
-  "https://ratemycollege.in",
-  "https://www.ratemycollege.in",
-  "https://ratemycollege.plutas.in",
+  "https://ratemycollege.vertexhq.in",
 ];
 
 function getCorsHeaders(origin: string | null) {
