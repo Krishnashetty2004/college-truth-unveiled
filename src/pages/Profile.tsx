@@ -21,6 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   User, LogOut, Star, BookOpen, Edit3, Save, X, GraduationCap,
 } from "lucide-react";
+import ShareButton from "@/components/ShareButton";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 type Profile = Tables<"profiles">;
@@ -333,6 +334,9 @@ const Profile = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Share & Referral */}
+        <ShareButton />
 
         {/* My Reviews */}
         <div>
