@@ -322,16 +322,6 @@ const CampusDrives = () => {
           </div>
         )}
 
-        {/* Footer note */}
-        <div className="mt-10 rounded-lg border border-border bg-card p-4 text-center">
-          <p className="text-sm text-muted-foreground">
-            💡 <span className="font-medium text-foreground">Pro tip:</span> Register on{" "}
-            <a href="https://app.joinsuperset.com/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-              Superset
-            </a>
-            {" "}— many companies like L&T, Cognizant, HCLTech hire exclusively through it.
-          </p>
-        </div>
       </main>
     </BrotherhoodGate>
   );
