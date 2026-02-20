@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Home, GraduationCap, BookOpen, User, Menu, BarChart3, GitCompare, Search, LogIn, Briefcase } from "lucide-react";
+import { Home, GraduationCap, BookOpen, User, Menu, BarChart3, GitCompare, Search, LogIn, Briefcase, Building2 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -36,6 +36,7 @@ const MobileBottomNav = () => {
   ];
 
   const moreNavItems = [
+    { to: "/campus-drives", icon: Building2, label: "Campus Drives" },
     { to: "/opportunities", icon: Briefcase, label: "Jobs & Internships" },
     { to: "/rankings", icon: BarChart3, label: "Rankings" },
     { to: "/compare", icon: GitCompare, label: "Compare" },

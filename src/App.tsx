@@ -20,6 +20,7 @@ import NotFound from "./pages/NotFound";
 import ProfessorDetail from "./pages/ProfessorDetail";
 import Profile from "./pages/Profile";
 import Opportunities from "./pages/Opportunities";
+import CampusDrives from "./pages/CampusDrives";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 
@@ -56,6 +57,7 @@ const App = () => (
               <Route path="/rankings" element={<ProtectedRoute><Rankings /></ProtectedRoute>} />
               <Route path="/compare" element={<ProtectedRoute><Compare /></ProtectedRoute>} />
               <Route path="/opportunities" element={<ProtectedRoute><Opportunities /></ProtectedRoute>} />
+              <Route path="/campus-drives" element={<ProtectedRoute><CampusDrives /></ProtectedRoute>} />
               <Route path="/stories" element={<ProtectedRoute><Stories /></ProtectedRoute>} />
               <Route path="/stories/:id" element={<ProtectedRoute><StoryDetail /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
