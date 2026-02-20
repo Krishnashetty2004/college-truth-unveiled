@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Search, X, Briefcase, AlertCircle, SlidersHorizontal } from "lucide-react";
+import { BrotherhoodGate } from "@/components/BrotherhoodGate";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -94,7 +95,7 @@ const Opportunities = () => {
   };
 
   return (
-    <>
+    <BrotherhoodGate>
       {/* Header */}
       <header className="border-b border-border bg-muted/30 px-4 py-10">
         <div className="container mx-auto max-w-6xl">
@@ -279,7 +280,7 @@ const Opportunities = () => {
           </>
         )}
       </main>
-    </>
+    </BrotherhoodGate>
   );
 };
 

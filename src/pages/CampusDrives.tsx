@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SEO } from "@/components/SEO";
+import { BrotherhoodGate } from "@/components/BrotherhoodGate";
 import { campusDrivesData, type CampusDrive } from "@/data/campusDrives";
 import { motion } from "framer-motion";
 
@@ -223,7 +224,7 @@ const CampusDrives = () => {
   };
 
   return (
-    <>
+    <BrotherhoodGate>
       <SEO
         title="Campus Drives 2026"
         description={`${campusDrivesData.openDrives} open campus drives from TCS, Infosys, Wipro, Cognizant & more. Apply for fresher jobs at top MNCs. Updated ${campusDrivesData.lastUpdated}.`}
@@ -332,7 +333,7 @@ const CampusDrives = () => {
           </p>
         </div>
       </main>
-    </>
+    </BrotherhoodGate>
   );
 };
 
