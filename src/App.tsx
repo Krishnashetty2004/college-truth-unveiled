@@ -7,7 +7,6 @@ import { HelmetProvider } from "react-helmet-async";
 import AppLayout from "./components/AppLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ErrorBoundary from "./components/ErrorBoundary";
-import WhatsAppSupport from "./components/WhatsAppSupport";
 import Index from "./pages/Index";
 import Colleges from "./pages/Colleges";
 import CollegeDetail from "./pages/CollegeDetail";
@@ -70,7 +69,6 @@ const App = () => (
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </AppLayout>
-            <WhatsAppSupport />
           </BrowserRouter>
         </TooltipProvider>
       </QueryClientProvider>

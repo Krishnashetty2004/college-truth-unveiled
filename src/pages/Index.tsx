@@ -313,6 +313,17 @@ const Index = () => {
               Plutas Labs
             </a>
           </p>
+          <p className="mt-4 text-sm text-muted-foreground">
+            Need help? Report bugs or request features?{" "}
+            <a
+              href="https://wa.me/917780185418?text=Hi%20Plutas%20Labs!%20I%20need%20help%20with%20RateMyCollege."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-green-500 hover:text-green-400 underline underline-offset-2 transition-colors"
+            >
+              Chat with us on WhatsApp
+            </a>
+          </p>
           <p className="mt-2 text-xs text-muted-foreground">
             © {new Date().getFullYear()} RateMyCollege
           </p>
