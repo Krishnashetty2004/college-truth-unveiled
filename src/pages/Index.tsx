@@ -13,17 +13,12 @@ const fadeIn = {
   }),
 };
 
-// Decorative divider SVG
 const Divider = () => (
-  <svg
-    className="mx-auto my-16 h-8 w-8 text-foreground/20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1"
-  >
-    <path d="M12 2L12 22M2 12L22 12M4 4L20 20M20 4L4 20" />
-  </svg>
+  <div className="my-16 flex items-center justify-center gap-4">
+    <div className="h-px w-12 bg-border" />
+    <span className="text-2xl">✦</span>
+    <div className="h-px w-12 bg-border" />
+  </div>
 );
 
 const Index = () => {
@@ -35,10 +30,9 @@ const Index = () => {
         url="/"
       />
 
-      {/* Letter-style content */}
-      <article className="mx-auto max-w-2xl px-6 py-24 md:py-32">
+      <article className="mx-auto max-w-2xl px-6 py-20 md:py-28">
 
-        {/* Opening */}
+        {/* Hero */}
         <motion.header
           initial="hidden"
           animate="visible"
@@ -46,18 +40,21 @@ const Index = () => {
           custom={0}
           className="text-center"
         >
-          <p className="text-sm tracking-widest text-muted-foreground uppercase">
-            A Letter to Students
+          <p className="text-sm tracking-wide text-muted-foreground">
+            by students, for students
           </p>
-          <h1 className="mt-8 font-display text-4xl leading-tight tracking-tight md:text-5xl lg:text-6xl">
-            The Truth About<br />
-            <em>Your College</em>
+          <h1 className="mt-6 font-display text-4xl leading-tight tracking-tight md:text-5xl lg:text-6xl">
+            Real talk about<br />
+            <em>your college.</em>
           </h1>
+          <p className="mt-6 text-lg text-foreground/80">
+            No BS. No paid rankings. Just honest reviews from people who actually lived it.
+          </p>
         </motion.header>
 
         <Divider />
 
-        {/* Section 1 */}
+        {/* The Problem */}
         <motion.section
           initial="hidden"
           whileInView="visible"
@@ -65,24 +62,27 @@ const Index = () => {
           variants={fadeIn}
           custom={1}
         >
-          <h2 className="font-display text-2xl italic md:text-3xl">
-            The Promise They Made
+          <h2 className="font-display text-2xl md:text-3xl">
+            Bro, we've all been there.
           </h2>
           <p className="mt-6 text-lg leading-relaxed text-foreground/80">
-            Every college brochure tells the same story. <em>World-class faculty. Industry connections.
-            100% placements.</em> The photographs show pristine labs and smiling students.
-            The numbers promise a future worth the fee.
+            Remember when you were choosing colleges? The brochures looked amazing.
+            <em> "World-class faculty. 100% placements. State-of-the-art infrastructure."</em>
           </p>
           <p className="mt-4 text-lg leading-relaxed text-foreground/80">
-            But somewhere between the glossy pages and the reality of cold hostel food at 7 AM,
-            the truth gets lost. Students discover too late that the "placement cell" is one
-            overworked coordinator with an Excel sheet.
+            Then you joined and realized the WiFi doesn't work, the mess food is
+            basically a survival test, and that "placement cell" is one guy with
+            an Excel sheet who's never online.
           </p>
+
+          <blockquote className="mt-8 border-l-4 border-foreground/20 pl-6 italic text-foreground/70">
+            "Bhai kash kisi ne pehle bataya hota..."
+          </blockquote>
         </motion.section>
 
         <Divider />
 
-        {/* Section 2 */}
+        {/* What We Do */}
         <motion.section
           initial="hidden"
           whileInView="visible"
@@ -90,21 +90,38 @@ const Index = () => {
           variants={fadeIn}
           custom={1}
         >
-          <h2 className="font-display text-2xl italic md:text-3xl">
-            We Built Something Different
+          <h2 className="font-display text-2xl md:text-3xl">
+            That's why we built this.
           </h2>
           <p className="mt-6 text-lg leading-relaxed text-foreground/80">
-            RateMyCollege exists because we believe students deserve the truth before
-            they commit four years and lakhs of rupees to an institution. Not marketing.
-            Not paid rankings. Just honest accounts from people who lived it.
+            <strong>RateMyCollege</strong> is where you share the real stuff — the things
+            colleges don't put in brochures. The hostel that floods every monsoon.
+            The professor who changed your life. The canteen uncle who gives extra samosa.
           </p>
           <p className="mt-4 text-lg leading-relaxed text-foreground/80">
-            We don't take money from colleges. Our loyalty is to students, not institutions.
-            Every review is anonymous, verified, and comes from real students with real experiences.
+            Your honest review helps the next batch make better choices. It's like
+            being the senior you wish you had.
           </p>
 
-          {/* Stats inline */}
-          <div className="mt-10 grid grid-cols-2 gap-6 border-y border-border py-8 md:grid-cols-4">
+          <div className="mt-10 rounded-xl border border-border bg-card/50 p-6">
+            <p className="text-center font-display text-xl italic text-foreground/70">
+              "We don't take money from colleges.<br />
+              Our loyalty is to students. Always."
+            </p>
+          </div>
+        </motion.section>
+
+        <Divider />
+
+        {/* Stats */}
+        <motion.section
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={fadeIn}
+          custom={1}
+        >
+          <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
             {[
               { value: "200+", label: "Colleges" },
               { value: "10", label: "Cities" },
@@ -112,7 +129,7 @@ const Index = () => {
               { value: "100%", label: "Anonymous" },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
-                <p className="font-display text-2xl md:text-3xl">{stat.value}</p>
+                <p className="font-display text-3xl md:text-4xl">{stat.value}</p>
                 <p className="mt-1 text-sm text-muted-foreground">{stat.label}</p>
               </div>
             ))}
@@ -121,7 +138,7 @@ const Index = () => {
 
         <Divider />
 
-        {/* Section 3 */}
+        {/* What We Rate */}
         <motion.section
           initial="hidden"
           whileInView="visible"
@@ -129,14 +146,12 @@ const Index = () => {
           variants={fadeIn}
           custom={1}
         >
-          <h2 className="font-display text-2xl italic md:text-3xl">
-            What We Rate
+          <h2 className="font-display text-2xl md:text-3xl">
+            We rate the stuff that actually matters.
           </h2>
           <p className="mt-6 text-lg leading-relaxed text-foreground/80">
-            We go beyond the obvious. Yes, we track placements and faculty quality.
-            But we also care about the things that shape your daily life —
-            the WiFi that cuts out during online exams, the hostel warden who
-            locks gates at 8 PM, the canteen food that tests your immunity.
+            Not just placements and faculty (though yeah, those too). We care about
+            the things that make your 4 years bearable — or unbearable.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-2">
@@ -146,17 +161,21 @@ const Index = () => {
             ].map((cat) => (
               <span
                 key={cat}
-                className="rounded-full border border-border px-4 py-2 text-sm"
+                className="rounded-full border border-border bg-card px-4 py-2 text-sm"
               >
                 {cat}
               </span>
             ))}
           </div>
+
+          <blockquote className="mt-8 border-l-4 border-foreground/20 pl-6 italic text-foreground/70">
+            "Finally someone asking the real questions — how's the WiFi at 2 AM?" 😂
+          </blockquote>
         </motion.section>
 
         <Divider />
 
-        {/* Section 4 - Jobs */}
+        {/* Jobs Section */}
         <motion.section
           initial="hidden"
           whileInView="visible"
@@ -164,24 +183,37 @@ const Index = () => {
           variants={fadeIn}
           custom={1}
         >
-          <h2 className="font-display text-2xl italic md:text-3xl">
-            Beyond Reviews
+          <h2 className="font-display text-2xl md:text-3xl">
+            Jobs & internships? We got you.
           </h2>
           <p className="mt-6 text-lg leading-relaxed text-foreground/80">
-            College is just the beginning. We've curated <strong>2,700+ jobs and internships</strong> from
-            companies that actually hire freshers. No middlemen skimming your first salary.
-            No consultancies charging for "placement assistance." Just direct apply links
-            to real opportunities.
+            We know the struggle. Placement season is chaos. That's why we track
+            <strong> 2,700+ opportunities</strong> from companies that actually hire freshers.
+            TCS, Infosys, Wipro, Cognizant — all the big ones.
           </p>
           <p className="mt-4 text-lg leading-relaxed text-foreground/80">
-            TCS, Infosys, Wipro, Cognizant, and dozens more — we track their campus drives
+            No consultancy fees. No middlemen. Just direct apply links, updated fast
             so you never miss a deadline.
           </p>
+
+          <div className="mt-8 rounded-xl border border-border bg-card/50 p-6">
+            <p className="font-medium">What you get:</p>
+            <ul className="mt-3 space-y-2 text-foreground/80">
+              <li>✓ Campus drives from top MNCs — updated daily</li>
+              <li>✓ Direct apply links — no middlemen</li>
+              <li>✓ Fresher-friendly roles — you're not competing with 5-year folks</li>
+              <li>✓ Deadline alerts — never miss an application</li>
+            </ul>
+          </div>
+
+          <blockquote className="mt-8 border-l-4 border-foreground/20 pl-6 italic text-foreground/70">
+            "Got my first job through a link I found here. Forever grateful." 🙏
+          </blockquote>
         </motion.section>
 
         <Divider />
 
-        {/* Section 5 - Cities */}
+        {/* Cities */}
         <motion.section
           initial="hidden"
           whileInView="visible"
@@ -189,13 +221,12 @@ const Index = () => {
           variants={fadeIn}
           custom={1}
         >
-          <h2 className="font-display text-2xl italic md:text-3xl">
-            Across India
+          <h2 className="font-display text-2xl md:text-3xl">
+            From Hyderabad to Delhi, we're everywhere.
           </h2>
           <p className="mt-6 text-lg leading-relaxed text-foreground/80">
-            From the tech corridors of Bangalore to the engineering hubs of Hyderabad,
-            from the campuses of Delhi-NCR to the institutes of Chennai — we're mapping
-            the truth about colleges in every major city.
+            200+ colleges across India's biggest education hubs. Find your city,
+            find the truth.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
@@ -206,10 +237,10 @@ const Index = () => {
               <Link
                 key={city}
                 to={`/colleges?city=${encodeURIComponent(city)}`}
-                className="group inline-flex items-center gap-1 text-foreground/70 underline underline-offset-4 decoration-foreground/30 hover:text-foreground hover:decoration-foreground transition-colors"
+                className="group inline-flex items-center gap-1 rounded-full border border-border bg-card px-4 py-2 text-sm transition-all hover:bg-foreground hover:text-background"
               >
                 {city}
-                <ChevronRight className="h-3 w-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                <ChevronRight className="h-3 w-3 opacity-50 group-hover:opacity-100" />
               </Link>
             ))}
           </div>
@@ -217,7 +248,7 @@ const Index = () => {
 
         <Divider />
 
-        {/* CTA */}
+        {/* Brotherhood CTA */}
         <motion.section
           initial="hidden"
           whileInView="visible"
@@ -227,12 +258,15 @@ const Index = () => {
           className="text-center"
         >
           <h2 className="font-display text-2xl md:text-3xl">
-            Your review could save someone<br />
-            <em>from a wrong decision.</em>
+            Help a junior out.<br />
+            <em>Write your review.</em>
           </h2>
           <p className="mx-auto mt-6 max-w-md text-lg leading-relaxed text-foreground/80">
-            Every honest review helps the next batch of students make better choices.
-            Sign in anonymously. Share your truth.
+            Think about it — if someone had told you the truth before you joined,
+            would you have made a different choice?
+          </p>
+          <p className="mx-auto mt-4 max-w-md text-lg leading-relaxed text-foreground/80">
+            Be that someone for the next batch. Share your story. It takes 2 minutes.
           </p>
 
           <div className="mt-10">
@@ -246,26 +280,30 @@ const Index = () => {
               </Button>
             </Link>
             <p className="mt-4 text-sm text-muted-foreground">
-              Free access to all features
+              Free forever. 100% anonymous. No spam, promise.
             </p>
           </div>
+
+          <blockquote className="mx-auto mt-12 max-w-md border-l-4 border-foreground/20 pl-6 text-left italic text-foreground/70">
+            "Wrote my first review yesterday. Felt good knowing some random junior
+            won't make the same mistake I did."
+          </blockquote>
         </motion.section>
 
-        {/* Signature */}
+        {/* Footer */}
         <motion.footer
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
           variants={fadeIn}
           custom={1}
-          className="mt-24 border-t border-border pt-12 text-center"
+          className="mt-20 border-t border-border pt-12 text-center"
         >
           <p className="font-display text-xl italic text-foreground/60">
-            "We don't take money from colleges.<br />
-            Our loyalty is to students, not institutions."
+            Built by students who wished this existed when they were choosing colleges.
           </p>
           <p className="mt-8 text-sm text-muted-foreground">
-            Built by{" "}
+            Made with ❤️ by{" "}
             <a
               href="https://www.plutas.in/landing.html"
               target="_blank"
@@ -281,7 +319,7 @@ const Index = () => {
         </motion.footer>
 
         {/* Quick Links */}
-        <nav className="mt-16 flex flex-wrap justify-center gap-6 text-sm">
+        <nav className="mt-12 flex flex-wrap justify-center gap-6 text-sm">
           <Link to="/colleges" className="text-foreground/60 hover:text-foreground transition-colors">
             Colleges
           </Link>
