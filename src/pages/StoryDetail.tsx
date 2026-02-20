@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { SEO } from "@/components/SEO";
 import { ArrowBigUp, ArrowBigDown, MessageCircle, ArrowLeft, Send, Reply, Loader2, ImageIcon, Instagram } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -381,6 +382,19 @@ const StoryDetail = () => {
 
   return (
     <>
+      <SEO
+        title={story.title}
+        description={`${story.content.slice(0, 150)}${story.content.length > 150 ? "..." : ""}`}
+        url={`/stories/${story.id}`}
+        type="article"
+        publishedTime={story.created_at || undefined}
+        story={{
+          title: story.title,
+          category: catInfo?.label || "Story",
+          createdAt: story.created_at || new Date().toISOString(),
+        }}
+      />
+
       {/* Lightbox */}
       {lightboxSrc && (
         <div

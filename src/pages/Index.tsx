@@ -2,6 +2,7 @@ import { ChevronRight, Shield, Eye, TrendingUp, Users, Briefcase } from "lucide-
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { SEO } from "@/components/SEO";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -55,6 +56,12 @@ const cities = [
 const Index = () => {
   return (
     <>
+      <SEO
+        title="Anonymous College Reviews & Jobs for Freshers"
+        description="India's first anonymous college review platform. 200+ colleges rated across 12 categories. 2,700+ jobs & internships for freshers. Proof-based reviews by real students."
+        url="/"
+      />
+
       {/* Hero — Terrain-inspired centered minimal */}
       <section className="flex min-h-screen flex-col items-center justify-center px-4">
         <div className="max-w-[600px] text-center">

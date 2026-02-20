@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { Search, X, GraduationCap, MapPin, Users, Calendar, ChevronRight, AlertCircle } from "lucide-react";
+import { SEO } from "@/components/SEO";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -179,8 +180,20 @@ const Colleges = () => {
     });
   };
 
+  const cityFilter = filters.city;
+  const seoTitle = cityFilter ? `Colleges in ${cityFilter}` : "College Directory";
+  const seoDescription = cityFilter
+    ? `Browse and compare colleges in ${cityFilter}. Read anonymous student reviews across 12 categories.`
+    : "Browse 200+ colleges across India's top education cities. Read anonymous student reviews and find your perfect college.";
+
   return (
     <>
+      <SEO
+        title={seoTitle}
+        description={seoDescription}
+        url={cityFilter ? `/colleges?city=${cityFilter}` : "/colleges"}
+      />
+
       {/* Header */}
       <header className="border-b border-border bg-muted/30 px-4 py-10">
         <div className="container mx-auto max-w-6xl">

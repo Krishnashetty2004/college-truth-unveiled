@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import type { User } from "@supabase/supabase-js";
+import { SEO } from "@/components/SEO";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -364,6 +365,20 @@ const CollegeDetail = () => {
 
   return (
     <>
+      <SEO
+        title={`${college.name} Reviews`}
+        description={`Read anonymous reviews of ${college.name} (${college.short_name || college.city}). ${college.total_reviews} reviews across 12 categories including placements, faculty, hostel, and more. ${score ? `Overall score: ${score.toFixed(1)}/10.` : ""}`}
+        url={`/colleges/${college.id}`}
+        college={{
+          name: college.name,
+          city: college.city,
+          state: college.state || "",
+          rating: score || undefined,
+          reviewCount: college.total_reviews || 0,
+          type: college.type,
+        }}
+      />
+
       {/* Back link + header */}
       <header className="border-b border-border bg-muted/30 px-4 py-8">
         <div className="container mx-auto max-w-5xl">

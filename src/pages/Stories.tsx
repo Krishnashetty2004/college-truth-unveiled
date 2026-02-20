@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { SEO } from "@/components/SEO";
 import { Flame, Clock, TrendingUp, MessageCircle, ArrowBigUp, ArrowBigDown, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -326,6 +327,12 @@ const Stories = () => {
 
   return (
     <>
+      <SEO
+        title="Campus Stories"
+        description="Raw, unfiltered, anonymous stories from college students across India. Professor tea, campus confessions, placement horror, and everything in between."
+        url="/stories"
+      />
+
       <header className="border-b border-border px-4 py-10">
         <div className="mx-auto max-w-3xl flex items-start justify-between">
           <div>
