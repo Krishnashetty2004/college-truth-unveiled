@@ -274,7 +274,8 @@ const StoryDetail = () => {
 
       const enriched: CommentWithAlias[] = (data || []).map((c) => ({
         ...c,
-        anonymous_alias: aliasMap[c.user_id] || "Anonymous",
+        // Use stored alias for seeded comments, or fetched alias for real users
+        anonymous_alias: (c as any).anonymous_alias || aliasMap[c.user_id] || "Anonymous",
       }));
 
       const map = new Map<string, CommentWithAlias>();
