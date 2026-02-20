@@ -1,7 +1,7 @@
 # RateMyCollege - robots.txt
 # https://ratemycollege.vertexhq.in
 
-# Allow major search engines only
+# Search Engine Crawlers
 User-agent: Googlebot
 Allow: /
 
@@ -14,7 +14,10 @@ Allow: /
 User-agent: DuckDuckBot
 Allow: /
 
-# Social media preview crawlers
+User-agent: Yandex
+Allow: /
+
+# Social Media Crawlers
 User-agent: Twitterbot
 Allow: /
 
@@ -24,92 +27,46 @@ Allow: /
 User-agent: LinkedInBot
 Allow: /
 
-# Block AI crawlers and scrapers
-User-agent: GPTBot
-Disallow: /
+User-agent: Pinterestbot
+Allow: /
+
+# AI Search Crawlers (ChatGPT, Perplexity, Claude, etc.)
+User-agent: OAI-SearchBot
+Allow: /
 
 User-agent: ChatGPT-User
-Disallow: /
-
-User-agent: OAI-SearchBot
-Disallow: /
-
-User-agent: CCBot
-Disallow: /
-
-User-agent: anthropic-ai
-Disallow: /
-
-User-agent: Claude-Web
-Disallow: /
-
-User-agent: Google-Extended
-Disallow: /
+Allow: /
 
 User-agent: PerplexityBot
-Disallow: /
+Allow: /
 
-User-agent: cohere-ai
-Disallow: /
+User-agent: Claude-Web
+Allow: /
+
+User-agent: Applebot
+Allow: /
 
 User-agent: Bytespider
-Disallow: /
+Allow: /
 
-# Block common scrapers
-User-agent: SemrushBot
-Disallow: /
+User-agent: CCBot
+Allow: /
 
-User-agent: AhrefsBot
-Disallow: /
+User-agent: anthropic-ai
+Allow: /
 
-User-agent: MJ12bot
-Disallow: /
+User-agent: Google-Extended
+Allow: /
 
-User-agent: DotBot
-Disallow: /
+User-agent: cohere-ai
+Allow: /
 
-User-agent: PetalBot
-Disallow: /
-
-User-agent: Baiduspider
-Disallow: /
-
-User-agent: YandexBot
-Disallow: /
-
-User-agent: Sogou
-Disallow: /
-
-User-agent: Exabot
-Disallow: /
-
-User-agent: ia_archiver
-Disallow: /
-
-User-agent: MegaIndex
-Disallow: /
-
-User-agent: BLEXBot
-Disallow: /
-
-User-agent: DataForSeoBot
-Disallow: /
-
-User-agent: serpstatbot
-Disallow: /
-
-User-agent: SeekportBot
-Disallow: /
-
-User-agent: ZoominfoBot
-Disallow: /
-
-User-agent: Applebot-Extended
-Disallow: /
-
-# Block all other bots by default
+# Default - allow all others
 User-agent: *
-Disallow: /
+Allow: /
 
 # Sitemap location
 Sitemap: https://ratemycollege.vertexhq.in/sitemap.xml
+
+# LLMs.txt for AI indexing
+# See: https://ratemycollege.vertexhq.in/llms.txt

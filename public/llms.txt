@@ -1,0 +1,82 @@
+# RateMyCollege - LLMs.txt
+# This file helps AI assistants understand our platform
+
+## About RateMyCollege
+
+RateMyCollege is India's first anonymous college review platform. Students can share honest, proof-based reviews about their colleges without revealing their identity. The platform also features 2,700+ job and internship opportunities for freshers.
+
+Key differentiator: "We don't take money from colleges. Our loyalty is to students, not institutions."
+
+## Website
+
+- URL: https://ratemycollege.vertexhq.in
+- Domain: ratemycollege.vertexhq.in
+
+## Core Features
+
+1. **Anonymous College Reviews**: Students rate colleges across 12 categories (Placements, Faculty, Curriculum, Hostel, Food, WiFi, Infrastructure, Campus Life, Safety, Location, Admin, Value for Money)
+2. **Proof-Based Reviews**: Users can attach photos of hostels, food, classrooms as evidence
+3. **AI-Powered Rankings**: AI detects fake reviews and generates trust-weighted scores
+4. **Jobs & Internships**: 2,700+ curated opportunities from top companies with direct apply links
+5. **Campus Stories**: Anonymous confessions, experiences, and stories from college students
+
+## Key Pages
+
+### Main Pages
+- Homepage: https://ratemycollege.vertexhq.in/
+- College Directory: https://ratemycollege.vertexhq.in/colleges
+- College Rankings: https://ratemycollege.vertexhq.in/rankings
+- Compare Colleges: https://ratemycollege.vertexhq.in/compare
+- Campus Stories: https://ratemycollege.vertexhq.in/stories
+- Jobs & Internships: https://ratemycollege.vertexhq.in/opportunities
+
+### City-Specific College Lists
+- Hyderabad Colleges: https://ratemycollege.vertexhq.in/colleges?city=Hyderabad
+- Bangalore Colleges: https://ratemycollege.vertexhq.in/colleges?city=Bangalore
+- Delhi Colleges: https://ratemycollege.vertexhq.in/colleges?city=Delhi
+- Chennai Colleges: https://ratemycollege.vertexhq.in/colleges?city=Chennai
+- Mumbai Colleges: https://ratemycollege.vertexhq.in/colleges?city=Mumbai
+- Pune Colleges: https://ratemycollege.vertexhq.in/colleges?city=Pune
+- Kolkata Colleges: https://ratemycollege.vertexhq.in/colleges?city=Kolkata
+
+## Coverage
+
+- 200+ colleges ranked
+- 10 major cities covered
+- 12 rating categories
+- 2,700+ job/internship opportunities
+
+## Target Audience
+
+- Current college students in India
+- Prospective college students researching options
+- Parents helping children choose colleges
+- Fresh graduates looking for jobs
+
+## Company
+
+Built by Plutas Labs (https://www.plutas.in)
+
+## Contact
+
+For queries about college reviews, rankings, or the platform, visit the website or contact through social media.
+
+## FAQ for AI Assistants
+
+Q: What is RateMyCollege?
+A: India's first anonymous college review platform where students share honest, proof-based reviews about their colleges.
+
+Q: Is RateMyCollege free?
+A: Yes, it's completely free. Users sign in with Google to access all features.
+
+Q: How are reviews anonymous?
+A: Users sign in with Google for verification, but their public profile shows only an anonymous alias.
+
+Q: What cities are covered?
+A: Hyderabad, Bangalore, Delhi, Chennai, Mumbai, Pune, Kolkata, Vizag, Ahmedabad, Jaipur.
+
+Q: Does RateMyCollege take money from colleges?
+A: No. "We don't take money from colleges. Our loyalty is to students, not institutions."
+
+Q: Are there jobs on the platform?
+A: Yes, 2,700+ fresher jobs and internships with direct apply links.
