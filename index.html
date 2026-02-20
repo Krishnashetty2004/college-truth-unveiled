@@ -19,6 +19,38 @@
     <meta name="twitter:title" content="RateMyCollege - Anonymous Reviews & Jobs for Freshers" />
     <meta name="twitter:description" content="India's first anonymous college review platform. 200+ colleges, 2,700+ jobs & internships for freshers." />
     <meta name="twitter:image" content="/favicon.jpeg" />
+
+    <!-- Instagram/Facebook in-app browser detection & redirect -->
+    <script>
+      (function() {
+        var ua = navigator.userAgent || navigator.vendor || window.opera;
+        var isInstagram = ua.indexOf('Instagram') > -1;
+        var isFacebook = ua.indexOf('FBAN') > -1 || ua.indexOf('FBAV') > -1;
+
+        if (isInstagram || isFacebook) {
+          var currentUrl = window.location.href;
+
+          // Android: Try Chrome intent
+          if (/android/i.test(ua)) {
+            window.location.href = 'intent://' + currentUrl.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;end';
+          }
+          // iOS: Try Safari
+          else if (/iPad|iPhone|iPod/.test(ua)) {
+            window.location.href = 'x-safari-' + currentUrl;
+          }
+
+          // Fallback: Show banner after 1 second if redirect didn't work
+          setTimeout(function() {
+            if (document.getElementById('inapp-banner')) return;
+            var banner = document.createElement('div');
+            banner.id = 'inapp-banner';
+            banner.innerHTML = '<div style="position:fixed;top:0;left:0;right:0;z-index:99999;background:#f59e0b;color:#000;padding:12px 16px;text-align:center;font-family:system-ui,sans-serif;font-size:14px;"><strong>For the best experience:</strong> Tap <strong>⋮</strong> (menu) → <strong>"Open in Browser"</strong></div>';
+            document.body.insertBefore(banner, document.body.firstChild);
+            document.body.style.paddingTop = '48px';
+          }, 1000);
+        }
+      })();
+    </script>
   </head>
 
   <body>
