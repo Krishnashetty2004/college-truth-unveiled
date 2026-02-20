@@ -3,6 +3,7 @@ import { GraduationCap, BarChart3, GitCompare, BookOpen, LogIn, User, Briefcase,
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import SearchDialog from "@/components/SearchDialog";
+import ThemeToggle from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import logoImg from "@/assets/logo.jpeg";
@@ -71,6 +72,7 @@ const Navbar = () => {
           </Link>
         );
       })}
+      <ThemeToggle />
     </motion.nav>
   );
 };

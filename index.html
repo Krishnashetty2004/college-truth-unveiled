@@ -20,6 +20,17 @@
     <meta name="twitter:description" content="India's first anonymous college review platform. 200+ colleges, 2,700+ jobs & internships for freshers." />
     <meta name="twitter:image" content="/favicon.jpeg" />
 
+    <!-- Theme initialization (prevent flash) -->
+    <script>
+      (function() {
+        var saved = localStorage.getItem('theme');
+        var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (saved === 'dark' || (!saved && prefersDark)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+
     <!-- Instagram/Facebook in-app browser detection & redirect -->
     <script>
       (function() {

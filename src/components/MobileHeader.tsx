@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import SearchDialog from "@/components/SearchDialog";
+import ThemeToggle from "@/components/ThemeToggle";
 import logoImg from "@/assets/logo.jpeg";
 
 const MobileHeader = () => {
@@ -17,8 +18,11 @@ const MobileHeader = () => {
         <span className="font-display text-lg font-semibold text-foreground">RateMyCollege</span>
       </Link>
 
-      {/* Search Button */}
-      <SearchDialog />
+      {/* Actions */}
+      <div className="flex items-center gap-1">
+        <ThemeToggle />
+        <SearchDialog />
+      </div>
     </motion.header>
   );
 };
