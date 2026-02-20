@@ -1,13 +1,37 @@
 import { useState, useMemo } from "react";
-import { ExternalLink, Calendar, MapPin, GraduationCap, Flame, Clock, Building2, Filter, X, ChevronRight, Sparkles } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { ExternalLink, Calendar, MapPin, GraduationCap, Flame, Building2, X, ChevronRight, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SEO } from "@/components/SEO";
 import { BrotherhoodGate } from "@/components/BrotherhoodGate";
-import { campusDrivesData, type CampusDrive } from "@/data/campusDrives";
+import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
+
+interface CampusDrive {
+  id: string;
+  company: string;
+  program: string;
+  role: string;
+  status: "open" | "closed-recently" | "closed";
+  urgency: "hot" | "normal";
+  batch: string[];
+  qualification: string;
+  salary: string;
+  locations: string;
+  registration_open: string;
+  deadline: string;
+  test_date: string | null;
+  apply_url: string;
+  career_url: string;
+  eligibility: string;
+  process: string;
+  tags: string[];
+  color: string;
+  highlight: string;
+}
 
 const tagLabels: Record<string, string> = {
   "mass-hiring": "Mass Hiring",
@@ -83,7 +107,7 @@ function DriveCard({ drive, index }: { drive: CampusDrive; index: number }) {
               )}
             </div>
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              {drive.batch.map((b) => (
+              {drive.batch?.map((b) => (
                 <Badge key={b} variant="outline" className="text-[10px] px-1.5 py-0">
                   {b}
                 </Badge>
@@ -143,7 +167,7 @@ function DriveCard({ drive, index }: { drive: CampusDrive; index: number }) {
 
             {/* Tags */}
             <div className="flex flex-wrap gap-1">
-              {drive.tags.slice(0, 4).map((tag) => (
+              {drive.tags?.slice(0, 4).map((tag) => (
                 <Badge key={tag} variant="secondary" className="text-[10px] px-1.5 py-0">
                   {tagLabels[tag] || tag}
                 </Badge>
@@ -152,7 +176,7 @@ function DriveCard({ drive, index }: { drive: CampusDrive; index: number }) {
 
             {/* CTA */}
             <div className="flex gap-2 pt-1">
-              <a href={drive.applyUrl} target="_blank" rel="noopener noreferrer" className="flex-1">
+              <a href={drive.apply_url} target="_blank" rel="noopener noreferrer" className="flex-1">
                 <Button
                   size="sm"
                   className="w-full gap-1"
@@ -162,7 +186,7 @@ function DriveCard({ drive, index }: { drive: CampusDrive; index: number }) {
                   Apply Now <ExternalLink className="h-3 w-3" />
                 </Button>
               </a>
-              <a href={drive.careerUrl} target="_blank" rel="noopener noreferrer">
+              <a href={drive.career_url} target="_blank" rel="noopener noreferrer">
                 <Button size="sm" variant="outline" className="gap-1">
                   Careers <ChevronRight className="h-3 w-3" />
                 </Button>
@@ -180,23 +204,43 @@ const CampusDrives = () => {
   const [statusFilter, setStatusFilter] = useState<string>("open");
   const [typeFilter, setTypeFilter] = useState<string>("all");
 
+  // Fetch campus drives from Supabase
+  const { data: drives = [], isLoading } = useQuery({
+    queryKey: ["campus-drives"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("campus_drives")
+        .select("*")
+        .eq("is_active", true)
+        .order("urgency", { ascending: true })
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data as CampusDrive[];
+    },
+  });
+
   // Get unique companies
   const companies = useMemo(() => {
-    const set = new Set(campusDrivesData.drives.map((d) => d.company));
+    const set = new Set(drives.map((d) => d.company));
     return Array.from(set).sort();
-  }, []);
+  }, [drives]);
+
+  // Calculate stats
+  const openDrives = useMemo(() => drives.filter(d => d.status === "open").length, [drives]);
+  const lastUpdated = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
 
   // Filter drives
   const filteredDrives = useMemo(() => {
-    return campusDrivesData.drives.filter((drive) => {
+    return drives.filter((drive) => {
       if (companyFilter !== "all" && drive.company !== companyFilter) return false;
       if (statusFilter === "open" && drive.status !== "open") return false;
       if (statusFilter === "closed" && drive.status === "open") return false;
-      if (typeFilter === "engineering" && !drive.tags.some(t => ["engineering", "mass-hiring", "product-company", "faang"].includes(t))) return false;
-      if (typeFilter === "non-engineering" && !drive.tags.some(t => ["non-engineering", "arts-commerce", "any-degree", "non-engineering-eligible"].includes(t))) return false;
+      if (typeFilter === "engineering" && !drive.tags?.some(t => ["engineering", "mass-hiring", "product-company", "faang"].includes(t))) return false;
+      if (typeFilter === "non-engineering" && !drive.tags?.some(t => ["non-engineering", "arts-commerce", "any-degree", "non-engineering-eligible"].includes(t))) return false;
       return true;
     });
-  }, [companyFilter, statusFilter, typeFilter]);
+  }, [drives, companyFilter, statusFilter, typeFilter]);
 
   // Sort: hot first, then by deadline
   const sortedDrives = useMemo(() => {
@@ -223,11 +267,21 @@ const CampusDrives = () => {
     setTypeFilter("all");
   };
 
+  if (isLoading) {
+    return (
+      <BrotherhoodGate>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </BrotherhoodGate>
+    );
+  }
+
   return (
     <BrotherhoodGate>
       <SEO
         title="Campus Drives 2026"
-        description={`${campusDrivesData.openDrives} open campus drives from TCS, Infosys, Wipro, Cognizant & more. Apply for fresher jobs at top MNCs. Updated ${campusDrivesData.lastUpdated}.`}
+        description={`${openDrives} open campus drives from TCS, Infosys, Wipro, Cognizant & more. Apply for fresher jobs at top MNCs.`}
         url="/campus-drives"
       />
 
@@ -239,7 +293,7 @@ const CampusDrives = () => {
             <div>
               <h1 className="font-display text-3xl font-bold">Campus Drives 2026</h1>
               <p className="text-muted-foreground">
-                {campusDrivesData.openDrives} open drives · Updated {new Date(campusDrivesData.lastUpdated).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
+                {openDrives} open drives · Updated {lastUpdated}
               </p>
             </div>
           </div>
