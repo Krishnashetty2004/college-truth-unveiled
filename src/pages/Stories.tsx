@@ -50,12 +50,19 @@ function useStories(sort: SortMode, category?: string) {
         query = query.eq("category", category);
       }
 
+      // Always prioritize real users (is_seeded = false) over seeded content
+      query = query.order("is_seeded", { ascending: true });
+
       if (sort === "new") {
         query = query.order("created_at", { ascending: false });
       } else if (sort === "top") {
         query = query.order("upvote_count", { ascending: false });
       } else {
-        query = query.order("upvote_count", { ascending: false }).order("created_at", { ascending: false });
+        // Hot: engagement score (upvotes + comments)
+        query = query
+          .order("upvote_count", { ascending: false })
+          .order("comment_count", { ascending: false })
+          .order("created_at", { ascending: false });
       }
 
       query = query.limit(30);
