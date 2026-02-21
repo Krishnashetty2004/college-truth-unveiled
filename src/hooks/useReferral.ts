@@ -9,33 +9,41 @@ import {
   getShareUrls,
 } from "@/utils/referral";
 
-// Track click on app load
+// Track click on app load - fails silently
 export function useTrackReferralClick() {
   useEffect(() => {
-    trackReferralClick();
+    try {
+      trackReferralClick();
+    } catch (e) {
+      // Fail silently - don't break the app
+    }
   }, []);
 }
 
-// Handle referral setup for authenticated users
+// Handle referral setup for authenticated users - fails silently
 export function useReferralSetup() {
   useEffect(() => {
     const setupReferral = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-      if (!session?.user) return;
+        if (!session?.user) return;
 
-      const userId = session.user.id;
-      const email = session.user.email || "";
+        const userId = session.user.id;
+        const email = session.user.email || "";
 
-      // Check if user already has a ref code
-      const existingCode = await getUserRefCode(userId);
+        // Check if user already has a ref code
+        const existingCode = await getUserRefCode(userId);
 
-      if (!existingCode) {
-        // New user - track conversion and create their ref code
-        await trackConversion(userId);
-        await createReferral(userId, email);
+        if (!existingCode) {
+          // New user - track conversion and create their ref code
+          await trackConversion(userId).catch(() => {});
+          await createReferral(userId, email).catch(() => {});
+        }
+      } catch (e) {
+        // Fail silently - don't break the app
       }
     };
 
@@ -45,13 +53,17 @@ export function useReferralSetup() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "SIGNED_IN" && session?.user) {
-        const existingCode = await getUserRefCode(session.user.id);
+      try {
+        if (event === "SIGNED_IN" && session?.user) {
+          const existingCode = await getUserRefCode(session.user.id);
 
-        if (!existingCode) {
-          await trackConversion(session.user.id);
-          await createReferral(session.user.id, session.user.email || "");
+          if (!existingCode) {
+            await trackConversion(session.user.id).catch(() => {});
+            await createReferral(session.user.id, session.user.email || "").catch(() => {});
+          }
         }
+      } catch (e) {
+        // Fail silently
       }
     });
 
@@ -71,22 +83,26 @@ export function useUserReferral() {
 
   useEffect(() => {
     const loadStats = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-      if (!session?.user) {
-        setLoading(false);
-        return;
-      }
+        if (!session?.user) {
+          setLoading(false);
+          return;
+        }
 
-      const data = await getReferralStats(session.user.id);
+        const data = await getReferralStats(session.user.id);
 
-      if (data) {
-        setStats({
-          ...data,
-          shareUrls: getShareUrls(data.refCode),
-        });
+        if (data) {
+          setStats({
+            ...data,
+            shareUrls: getShareUrls(data.refCode),
+          });
+        }
+      } catch (e) {
+        // Fail silently
       }
 
       setLoading(false);
