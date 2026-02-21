@@ -7,7 +7,7 @@ import { HelmetProvider } from "react-helmet-async";
 import AppLayout from "./components/AppLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ErrorBoundary from "./components/ErrorBoundary";
-import { useTrackReferralClick, useReferralSetup } from "./hooks/useReferral";
+// import { useTrackReferralClick, useReferralSetup } from "./hooks/useReferral";
 import Index from "./pages/Index";
 import Colleges from "./pages/Colleges";
 import CollegeDetail from "./pages/CollegeDetail";
@@ -36,12 +36,12 @@ const queryClient = new QueryClient({
   },
 });
 
-// Track referrals
-function ReferralTracker() {
-  useTrackReferralClick();
-  useReferralSetup();
-  return null;
-}
+// Track referrals - disabled temporarily
+// function ReferralTracker() {
+//   useTrackReferralClick();
+//   useReferralSetup();
+//   return null;
+// }
 
 const App = () => (
   <ErrorBoundary>
@@ -51,7 +51,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <ReferralTracker />
+            {/* <ReferralTracker /> */}
             <AppLayout>
               <Routes>
                 {/* Public routes */}
