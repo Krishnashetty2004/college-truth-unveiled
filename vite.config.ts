@@ -38,9 +38,6 @@ export default defineConfig({
             if (id.includes("framer-motion")) {
               return "vendor-animation";
             }
-            if (id.includes("recharts")) {
-              return "vendor-charts";
-            }
             if (id.includes("@radix-ui")) {
               return "vendor-ui";
             }
